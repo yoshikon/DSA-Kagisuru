@@ -22,10 +22,12 @@ export class FileStorage {
       let fileId: string;
       let useDatabase = false;
       
-      // Supabaseの設定が完全かチェック
+      // Supabaseの設定が完全かチェック（より厳密に）
       if (supabaseUrl && supabaseKey && 
           supabaseUrl !== 'your-supabase-url' && 
-          supabaseKey !== 'your-supabase-anon-key') {
+          supabaseKey !== 'your-supabase-anon-key' &&
+          supabaseUrl.startsWith('https://') &&
+          supabaseKey.length > 20) {
         try {
           console.log('Supabaseデータベースに保存を試行中...');
           fileId = await DatabaseService.saveEncryptedFile(
@@ -41,7 +43,7 @@ export class FileStorage {
           fileId = this.generateFileId();
         }
       } else {
-        console.info('Supabase環境変数が未設定です。ローカルストレージを使用します。');
+        console.info('Supabase環境変数が未設定または無効です。ローカルストレージを使用します。');
         fileId = this.generateFileId();
       }
       
