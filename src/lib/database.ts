@@ -88,6 +88,11 @@ export class DatabaseService {
 
   // ファイル情報取得
   static async getFileById(fileId: string): Promise<any | null> {
+    if (!isSupabaseAvailable() || !supabase) {
+      console.warn('Supabaseが利用できません。getFileByIdをスキップします。');
+      return null;
+    }
+
     try {
       const { data, error } = await supabase
         .from('encrypted_files')
@@ -153,6 +158,11 @@ export class DatabaseService {
 
   // ファイル削除
   static async deleteFile(fileId: string): Promise<boolean> {
+    if (!isSupabaseAvailable() || !supabase) {
+      console.warn('Supabaseが利用できません。deleteFileをスキップします。');
+      return false;
+    }
+
     try {
       const { error } = await supabase
         .from('encrypted_files')
@@ -168,6 +178,11 @@ export class DatabaseService {
 
   // ダウンロード数更新
   static async incrementDownloadCount(fileId: string): Promise<void> {
+    if (!isSupabaseAvailable() || !supabase) {
+      console.warn('Supabaseが利用できません。incrementDownloadCountをスキップします。');
+      return;
+    }
+
     try {
       await supabase.rpc('increment_download_count', { file_id: fileId });
     } catch (error) {

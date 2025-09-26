@@ -38,19 +38,32 @@ export function DashboardPage() {
         }
       });
       
-      const fileData = allFiles;
+      // FileListコンポーネントが期待する形式にデータを変換
+      const fileData = allFiles.map(file => ({
+        id: file.id,
+        originalName: file.original_name || file.originalName,
+        size: file.file_size || file.size,
+        recipients: file.file_recipients 
+          ? file.file_recipients.map(r => r.email)
+          : (file.recipients || []),
+        createdAt: file.created_at || file.createdAt,
+        downloadCount: file.download_count || file.downloadCount || 0,
+        message: file.message,
+        expiresAt: file.expires_at || file.expiresAt
+      }));
+      
       setFiles(fileData);
       
       // 統計計算
       const totalFiles = fileData.length;
       const totalRecipients = fileData.reduce((sum, file) => 
-        sum + (file.file_recipients?.length || 0), 0
+        sum + (file.recipients?.length || 0), 0
       );
       const totalDownloads = fileData.reduce((sum, file) => 
-        sum + (file.download_count || 0), 0
+        sum + (file.downloadCount || 0), 0
       );
       const storageUsed = fileData.reduce((sum, file) => 
-        sum + (file.file_size || 0), 0
+        sum + (file.size || 0), 0
       );
       
       setStats({
@@ -89,6 +102,15 @@ export function DashboardPage() {
       if (file) {
         const recipients = file.file_recipients?.map(r => r.email).join(', ') || '';
         alert(`ファイル詳細:\n名前: ${file.original_name}\nサイズ: ${formatFileSize(file.file_size)}\n受信者: ${recipients}\n作成日: ${new Date(file.created_at).toLocaleString('ja-JP')}`);
+      } else {
+        // ローカルストレージから取得を試行
+        const localFile = files.find(f => f.id === fileId);
+        if (localFile) {
+          const recipients = localFile.recipients?.join(', ') || '';
+          alert(`ファイル詳細:\n名前: ${localFile.originalName}\nサイズ: ${formatFileSize(localFile.size)}\n受信者: ${recipients}\n作成日: ${new Date(localFile.createdAt).toLocaleString('ja-JP')}`);
+        } else {
+          alert('ファイル詳細を取得できませんでした');
+        }
       }
     });
   };
