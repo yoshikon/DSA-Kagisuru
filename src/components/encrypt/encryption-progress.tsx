@@ -65,7 +65,9 @@ export function EncryptionProgressModal({ progress }: EncryptionProgressProps) {
           {progress.step === 'complete' && (
             <div className="mt-4 p-4 bg-green-50 rounded-lg">
               <p className="text-sm text-green-800">
-                受信者にメールを送信しました。ファイルは指定した有効期限まで利用可能です。
+                ✅ 受信者全員にメールを送信しました！<br/>
+                📧 各受信者は専用のアクセスリンクでファイルをダウンロードできます<br/>
+                🔒 ファイルは指定した有効期限まで利用可能です
               </p>
             </div>
           )}

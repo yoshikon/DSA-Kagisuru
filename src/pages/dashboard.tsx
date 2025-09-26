@@ -15,10 +15,29 @@ export function DashboardPage() {
 
   useEffect(() => {
     loadFiles();
+    
+    // 5秒ごとにファイル一覧を更新（リアルタイム更新）
+    const interval = setInterval(loadFiles, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   const loadFiles = () => {
-    DatabaseService.getUserFiles().then(fileData => {
+    // ローカルストレージとデータベースの両方から取得
+    Promise.all([
+      DatabaseService.getUserFiles().catch(() => []),
+      Promise.resolve(FileStorage.getFileList())
+    ]).then(([dbFiles, localFiles]) => {
+      // データベースファイルを優先し、ローカルファイルで補完
+      const allFiles = [...dbFiles];
+      
+      // ローカルファイルでデータベースにないものを追加
+      localFiles.forEach(localFile => {
+        if (!allFiles.find(dbFile => dbFile.id === localFile.id)) {
+          allFiles.push(localFile);
+        }
+      });
+      
+      const fileData = allFiles;
       setFiles(fileData);
       
       // 統計計算

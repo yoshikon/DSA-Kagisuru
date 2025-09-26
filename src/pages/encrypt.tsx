@@ -62,7 +62,13 @@ export function EncryptPage() {
         message: 'セキュアストレージにアップロード中...'
       });
 
-      // ファイル保存
+      setProgress({
+        step: 'uploading',
+        progress: 85,
+        message: 'セキュアストレージに保存中...'
+      });
+
+      // ファイル保存（メール送信も含む）
       const fileId = await FileStorage.saveEncryptedFile(
         encryptedFile, 
         recipients, 
@@ -71,35 +77,19 @@ export function EncryptPage() {
       );
       
       setProgress({
-        step: 'uploading',
+        step: 'complete',
         progress: 90,
         message: 'メール送信中...'
       });
 
-      // メール送信
-      if (isSupabaseAvailable()) {
-        try {
-          // 実際のメール送信（Supabase利用時）
-          console.log('📧 メール送信機能は開発中です');
-          // await EmailService.sendFileNotification(recipients, fileId, encryptedFile.originalName, message);
-        } catch (emailError) {
-          console.warn('メール送信に失敗:', emailError);
-        }
-      } else {
-        // デモ用メール送信ログ
-        console.log('📧 メール送信（デモ）:', {
-          recipients,
-          fileName: encryptedFile.originalName,
-          fileId,
-          message
+      // 少し待ってから完了状態に
+      setTimeout(() => {
+        setProgress({
+          step: 'complete',
+          progress: 100,
+          message: '暗号化とメール送信が完了しました！'
         });
-      }
-
-      setProgress({
-        step: 'complete',
-        progress: 100,
-        message: '暗号化が完了しました！'
-      });
+      }, 1000);
 
       // リセット
       setTimeout(() => {
@@ -107,7 +97,12 @@ export function EncryptPage() {
         setRecipients([]);
         setMessage('');
         setIsEncrypting(false);
-      }, 3000);
+        
+        // ダッシュボードに移動するかユーザーに確認
+        if (confirm('ファイルの送信が完了しました。ダッシュボードで送信状況を確認しますか？')) {
+          window.location.href = '/dashboard';
+        }
+      }, 4000);
 
     } catch (error) {
       console.error('Encryption failed:', error);

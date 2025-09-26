@@ -1,6 +1,7 @@
 import { DatabaseService } from './database';
 import { isSupabaseAvailable } from './supabase';
 import { EmailService } from './email-service';
+import { FileStorage } from './storage';
 
 // ローカルストレージヘルパー（フォールバック用）
 export class FileStorage {
