@@ -102,7 +102,7 @@ export class EmailService {
       <body>
         <div class="container">
           <div class="header">
-            <h1>🔐 カギスル</h1>
+            <h1>🔐 カギエース</h1>
             <p>セキュアファイル共有サービス</p>
           </div>
           
@@ -145,7 +145,7 @@ export class EmailService {
           </div>
 
           <div class="footer">
-            <p>このメールは カギスル から送信されました</p>
+            <p>このメールは カギエース から送信されました</p>
             <p>心当たりがない場合は、このメールを削除してください</p>
           </div>
         </div>
@@ -159,7 +159,7 @@ export class EmailService {
     try {
       const emailData = {
         to: email,
-        subject: '【カギスル】認証コード',
+        subject: '【カギエース】認証コード',
         html: `
           <div style="font-family: sans-serif; max-width: 400px; margin: 0 auto; padding: 20px;">
             <h2>🔐 認証コード</h2>
