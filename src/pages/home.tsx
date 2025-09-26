@@ -54,7 +54,7 @@ export function HomePage() {
                 <Lock className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">カギスル</h1>
+                <h1 className="text-xl font-bold text-gray-900">カギエース</h1>
                 <p className="text-xs text-gray-500">Secure File Sharing</p>
               </div>
             </div>
@@ -113,7 +113,7 @@ export function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              なぜカギスルなのか？
+              なぜカギエースなのか？
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
               従来のPPAP（パスワード付きZIP）の問題を解決する、次世代のセキュアファイル共有
@@ -185,7 +185,7 @@ export function HomePage() {
             今すぐセキュアなファイル共有を始めましょう
           </h2>
           <p className="text-xl text-blue-100 mb-8">
-            無料で利用開始。アカウント登録不要で即座に暗号化ファイル共有が可能です。
+            WebAuthn認証で、受信者は簡単・安全にファイルにアクセスできます。
           </p>
           <button
             onClick={() => window.location.href = '/encrypt'}
@@ -207,13 +207,13 @@ export function HomePage() {
                 <Lock className="h-5 w-5 text-white" />
               </div>
               <div>
-                <h3 className="text-lg font-bold">カギスル</h3>
+                <h3 className="text-lg font-bold">カギエース</h3>
                 <p className="text-xs text-gray-400">Secure File Sharing</p>
               </div>
             </div>
             
             <div className="text-sm text-gray-400">
-              <p>© 2024 カギスル. AES-256暗号化によるセキュアファイル共有</p>
+              <p>© 2024 カギエース. AES-256暗号化によるセキュアファイル共有</p>
             </div>
           </div>
         </div>

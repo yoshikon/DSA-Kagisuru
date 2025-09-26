@@ -18,15 +18,15 @@ export function Header({ currentPath = '/' }: HeaderProps) {
           {/* ロゴ */}
           <div className="flex items-center">
             <div className="flex-shrink-0 flex items-center">
-              <div className="flex items-center space-x-2">
+              <a href="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
                 <div className="p-2 bg-blue-600 rounded-lg">
                   <Lock className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-xl font-bold text-gray-900">カギスル</h1>
+                  <h1 className="text-xl font-bold text-gray-900">カギエース</h1>
                   <p className="text-xs text-gray-500">Secure File Sharing</p>
                 </div>
-              </div>
+              </a>
             </div>
           </div>
 
