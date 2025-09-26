@@ -129,43 +129,43 @@ export function RecipientForm({
           <p className="mt-1 text-sm text-red-600">{error}</p>
         )}
         
-            {requireVerification && (
-              <div className="text-xs text-green-700 bg-green-50 px-2 py-1 rounded border border-green-200 mb-2">
-                🔒 これらのメールアドレスでのみアクセス可能です
-              </div>
-            )}
         <p className="mt-1 text-xs text-gray-500">
           {recipients.length}/{maxRecipients} 人が追加されています
-                <div key={index} className={`flex items-center justify-between px-3 py-2 rounded-lg ${
-                  requireVerification ? 'bg-green-50 border border-green-200' : 'bg-blue-50'
-                }`}>
+        </p>
       </div>
-                    <Mail className={`h-4 w-4 ${requireVerification ? 'text-green-600' : 'text-blue-600'}`} />
-                    <span className={`text-sm font-medium ${requireVerification ? 'text-green-900' : 'text-blue-900'}`}>
-                      {email}
-                    </span>
-                    {requireVerification && (
-                      <Shield className="h-3 w-3 text-green-600" />
-                    )}
+
+      {recipients.length > 0 && (
         <div className="space-y-2">
           <h4 className="font-medium text-gray-900">受信者一覧:</h4>
+          {requireVerification && (
+            <div className="text-xs text-green-700 bg-green-50 px-2 py-1 rounded border border-green-200 mb-2">
+              🔒 これらのメールアドレスでのみアクセス可能です
+            </div>
+          )}
           <div className="space-y-1">
-                    className={`p-1 rounded-full transition-colors ${
-                      requireVerification 
-                        ? 'hover:bg-green-100' 
-                        : 'hover:bg-blue-100'
-                    }`}
-              <div key={index} className="flex items-center justify-between bg-blue-50 px-3 py-2 rounded-lg">
+            {recipients.map((email, index) => (
+              <div key={index} className={`flex items-center justify-between px-3 py-2 rounded-lg ${
+                requireVerification ? 'bg-green-50 border border-green-200' : 'bg-blue-50'
+              }`}>
                 <div className="flex items-center space-x-2">
-                    <X className={`h-3 w-3 ${requireVerification ? 'text-green-700' : 'text-blue-700'}`} />
-                  <span className="text-sm font-medium text-blue-900">{email}</span>
+                  <Mail className={`h-4 w-4 ${requireVerification ? 'text-green-600' : 'text-blue-600'}`} />
+                  <span className={`text-sm font-medium ${requireVerification ? 'text-green-900' : 'text-blue-900'}`}>
+                    {email}
+                  </span>
+                  {requireVerification && (
+                    <Shield className="h-3 w-3 text-green-600" />
+                  )}
                 </div>
                 <button
                   onClick={() => removeRecipient(index)}
-                  className="p-1 hover:bg-blue-100 rounded-full transition-colors"
+                  className={`p-1 rounded-full transition-colors ${
+                    requireVerification 
+                      ? 'hover:bg-green-100' 
+                      : 'hover:bg-blue-100'
+                  }`}
                   disabled={disabled}
                 >
-                  <X className="h-3 w-3 text-blue-700" />
+                  <X className={`h-3 w-3 ${requireVerification ? 'text-green-700' : 'text-blue-700'}`} />
                 </button>
               </div>
             ))}
