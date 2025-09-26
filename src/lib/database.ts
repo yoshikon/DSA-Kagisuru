@@ -10,7 +10,6 @@ export class DatabaseService {
     originalName: string;
     mimeType: string;
     size: number;
-  }, recipients: string[], expiryDays: number, message?: string): Promise<string> {
   }, recipients: string[], expiryDays: number, message?: string): Promise<{ fileId: string; accessTokens: { [email: string]: string } }> {
     // Supabaseが利用できない場合はエラーを投げる
     if (!isSupabaseAvailable() || !supabase) {
@@ -49,16 +48,16 @@ export class DatabaseService {
       const accessTokens: { [email: string]: string } = {};
       
       // 受信者情報を保存
-      const recipientRecords = recipients.map(email => ({
+      const recipientRecords = recipients.map(email => {
         const accessToken = this.generateAccessToken();
         accessTokens[email] = accessToken;
         
         return {
-        file_id: fileRecord.id,
-        email: email,
-        encrypted_key: btoa(email), // 簡素化版（実際はより強固な暗号化が必要）
+          file_id: fileRecord.id,
+          email: email,
+          encrypted_key: btoa(email), // 簡素化版（実際はより強固な暗号化が必要）
           access_token: accessToken,
-        access_count: 0
+          access_count: 0
         };
       });
 
