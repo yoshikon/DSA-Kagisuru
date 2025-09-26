@@ -88,12 +88,12 @@ export class DatabaseService {
 
   // ファイル情報取得
   static async getFileById(fileId: string): Promise<any | null> {
-    try {
-      if (!isSupabaseAvailable() || !supabase) {
-        console.warn('Supabaseが利用できません。getFileByIdをスキップします。');
-        return null;
-      }
+    if (!isSupabaseAvailable() || !supabase) {
+      console.warn('Supabaseが利用できません。getFileByIdをスキップします。');
+      return null;
+    }
 
+    try {
       const { data, error } = await supabase
         .from('encrypted_files')
         .select(`
