@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Header } from '../components/layout/header';
 import { FileList } from '../components/dashboard/file-list';
 import { DatabaseService } from '../lib/database';
+import { FileStorage } from '../lib/storage';
 import { BarChart3, Shield, Users, HardDrive } from 'lucide-react';
 
 export function DashboardPage() {
