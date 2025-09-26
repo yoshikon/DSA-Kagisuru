@@ -41,6 +41,14 @@ export function DashboardPage() {
       });
     }).catch(error => {
       console.error('Failed to load files:', error);
+      // フォールバック: 空のデータを設定
+      setFiles([]);
+      setStats({
+        totalFiles: 0,
+        totalRecipients: 0,
+        totalDownloads: 0,
+        storageUsed: 0
+      });
     });
   };
 

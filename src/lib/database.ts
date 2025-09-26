@@ -117,6 +117,11 @@ export class DatabaseService {
 
   // ユーザーのファイル一覧取得
   static async getUserFiles(userId?: string): Promise<any[]> {
+    if (!isSupabaseAvailable() || !supabase) {
+      console.info('Supabaseが利用できません。空のファイル一覧を返します。');
+      return [];
+    }
+
     try {
       // デモ版では全ファイルを取得（実際はユーザーIDでフィルタ）
       const { data, error } = await supabase
