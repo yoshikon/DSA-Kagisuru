@@ -11,6 +11,7 @@ export class DatabaseService {
     mimeType: string;
     size: number;
   }, recipients: string[], expiryDays: number, message?: string): Promise<string> {
+  }, recipients: string[], expiryDays: number, message?: string): Promise<{ fileId: string; accessTokens: { [email: string]: string } }> {
     // Supabaseが利用できない場合はエラーを投げる
     if (!isSupabaseAvailable() || !supabase) {
       throw new Error('データベースサービスが利用できません。環境変数を確認してください。');
@@ -44,14 +45,22 @@ export class DatabaseService {
 
       if (fileError) throw fileError;
 
+      // アクセストークンを生成
+      const accessTokens: { [email: string]: string } = {};
+      
       // 受信者情報を保存
       const recipientRecords = recipients.map(email => ({
+        const accessToken = this.generateAccessToken();
+        accessTokens[email] = accessToken;
+        
+        return {
         file_id: fileRecord.id,
         email: email,
         encrypted_key: btoa(email), // 簡素化版（実際はより強固な暗号化が必要）
-        access_token: this.generateAccessToken(),
+          access_token: accessToken,
         access_count: 0
-      }));
+        };
+      });
 
       const { error: recipientError } = await supabase
         .from('file_recipients')
@@ -59,7 +68,10 @@ export class DatabaseService {
 
       if (recipientError) throw recipientError;
 
-      return fileRecord.id;
+      return { 
+        fileId: fileRecord.id, 
+        accessTokens: accessTokens 
+      };
     } catch (error) {
       console.error('Database save error:', error);
       throw new Error('ファイルの保存に失敗しました');

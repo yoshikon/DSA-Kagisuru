@@ -1,5 +1,6 @@
 import { DatabaseService } from './database';
 import { isSupabaseAvailable } from './supabase';
+import { EmailService } from './email-service';
 
 // ローカルストレージヘルパー（フォールバック用）
 export class FileStorage {
@@ -21,6 +22,7 @@ export class FileStorage {
       
       let fileId: string;
       let useDatabase = false;
+      let accessTokens: { [email: string]: string } = {};
       
       // Supabaseの設定が完全かチェック（より厳密に）
       if (supabaseUrl && supabaseKey && 
@@ -30,21 +32,31 @@ export class FileStorage {
           supabaseKey.length > 20) {
         try {
           console.log('Supabaseデータベースに保存を試行中...');
-          fileId = await DatabaseService.saveEncryptedFile(
+          const result = await DatabaseService.saveEncryptedFile(
             fileData, 
             recipients, 
             expiryDays, 
             message
           );
+          fileId = result.fileId;
+          accessTokens = result.accessTokens;
           useDatabase = true;
           console.log('データベース保存成功:', fileId);
         } catch (dbError) {
           console.warn('データベース保存に失敗、ローカルストレージを使用:', dbError);
           fileId = this.generateFileId();
+          // ローカル用のアクセストークン生成
+          recipients.forEach(email => {
+            accessTokens[email] = this.generateAccessToken(fileId, email);
+          });
         }
       } else {
         console.info('Supabase環境変数が未設定または無効です。ローカルストレージを使用します。');
         fileId = this.generateFileId();
+        // ローカル用のアクセストークン生成
+        recipients.forEach(email => {
+          accessTokens[email] = this.generateAccessToken(fileId, email);
+        });
       }
       
       // ローカルストレージに保存（バックアップまたはメイン）
@@ -61,6 +73,7 @@ export class FileStorage {
         mimeType: fileData.mimeType,
         size: fileData.size,
         recipients: recipients,
+        accessTokens: accessTokens,
         createdAt: new Date().toISOString(),
         expiresAt: new Date(Date.now() + expiryDays * 24 * 60 * 60 * 1000).toISOString(),
         downloadCount: 0,
@@ -72,6 +85,22 @@ export class FileStorage {
       
       if (!useDatabase) {
         console.log('ローカルストレージ保存完了:', fileId);
+      }
+      
+      // メール送信
+      try {
+        console.log('📧 メール送信開始...');
+        await EmailService.sendFileNotification(
+          recipients,
+          fileId,
+          fileData.originalName,
+          accessTokens,
+          message
+        );
+        console.log('✅ メール送信完了');
+      } catch (emailError) {
+        console.warn('⚠️ メール送信に失敗:', emailError);
+        // メール送信失敗でもファイル保存は成功として扱う
       }
       
       return fileId;
@@ -104,13 +133,47 @@ export class FileStorage {
   }
 
   // ファイル一覧取得
-  static getFileList(): string[] {
+  static getFileList(): any[] {
+    // データベースから取得を試行
+    if (isSupabaseAvailable()) {
+      try {
+        DatabaseService.getUserFiles().then(files => {
+          if (files && files.length > 0) {
+            return files;
+          }
+        });
+      } catch (error) {
+        console.warn('データベースからのファイル取得に失敗:', error);
+      }
+    }
+    
+    // ローカルストレージから取得
     const list = localStorage.getItem(`${this.STORAGE_PREFIX}files`);
     if (!list) return [];
     
     try {
-      const parsed = JSON.parse(list);
-      return Array.isArray(parsed) ? parsed : [];
+      const fileIds = JSON.parse(list);
+      if (!Array.isArray(fileIds)) return [];
+      
+      // 各ファイルの詳細情報を取得
+      const files = fileIds.map(fileId => {
+        const fileData = this.getFile(fileId);
+        if (!fileData) return null;
+        
+        return {
+          id: fileData.id,
+          original_name: fileData.originalName,
+          file_size: fileData.size,
+          mime_type: fileData.mimeType,
+          created_at: fileData.createdAt,
+          expires_at: fileData.expiresAt,
+          download_count: fileData.downloadCount || 0,
+          message: fileData.message,
+          file_recipients: fileData.recipients?.map(email => ({ email })) || []
+        };
+      }).filter(Boolean);
+      
+      return files;
     } catch {
       return [];
     }
@@ -144,7 +207,8 @@ export class FileStorage {
     const tokenData = {
       fileId,
       email,
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      random: Math.random().toString(36).substr(2, 9)
     };
     return btoa(JSON.stringify(tokenData));
   }
@@ -167,32 +231,6 @@ export class FileStorage {
       return { fileId: tokenData.fileId, email: tokenData.email };
     } catch {
       return null;
-    }
-  }
-}
-
-// メール送信サービス（実際のメール送信）
-export class EmailService {
-  static async sendFileNotification(
-    recipients: string[],
-    fileId: string,
-    fileName: string,
-    senderMessage?: string
-  ): Promise<boolean> {
-    try {
-      return await EmailService.sendFileNotification(
-        recipients,
-        fileId,
-        fileName,
-        senderMessage
-      );
-    } catch (error) {
-      console.error('Email service error:', error);
-      // フォールバック: コンソール出力
-      console.log('📧 Email sent to:', recipients);
-      console.log('📎 File:', fileName);
-      console.log('💬 Message:', senderMessage);
-      return true;
     }
   }
 }
