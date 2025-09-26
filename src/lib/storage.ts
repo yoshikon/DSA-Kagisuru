@@ -190,16 +190,68 @@ export class FileStorage {
   // ファイル削除
   static deleteFile(fileId: string): boolean {
     try {
+      // ファイルデータを削除
       localStorage.removeItem(`${this.STORAGE_PREFIX}${fileId}`);
       
       // ファイル一覧からも削除
-      const currentList = this.getFileList();
-      const updatedList = currentList.filter(id => id !== fileId);
-      localStorage.setItem(`${this.STORAGE_PREFIX}files`, JSON.stringify(updatedList));
+      const listData = localStorage.getItem(`${this.STORAGE_PREFIX}files`);
+      if (listData) {
+        try {
+          const currentList = JSON.parse(listData);
+          if (Array.isArray(currentList)) {
+            const updatedList = currentList.filter(id => id !== fileId);
+            localStorage.setItem(`${this.STORAGE_PREFIX}files`, JSON.stringify(updatedList));
+          }
+        } catch (parseError) {
+          console.warn('Failed to parse file list for deletion:', parseError);
+        }
+      }
       
       return true;
-    } catch {
+    } catch (error) {
+      console.error('File deletion error:', error);
       return false;
+    }
+  }
+
+  // 複数ファイル削除
+  static deleteMultipleFiles(fileIds: string[]): { success: string[]; failed: string[] } {
+    const success: string[] = [];
+    const failed: string[] = [];
+    
+    fileIds.forEach(fileId => {
+      if (this.deleteFile(fileId)) {
+        success.push(fileId);
+      } else {
+        failed.push(fileId);
+      }
+    });
+    
+    return { success, failed };
+  }
+
+  // ファイル一覧の整合性チェック
+  static cleanupFileList(): void {
+    try {
+      const listData = localStorage.getItem(`${this.STORAGE_PREFIX}files`);
+      if (!listData) return;
+      
+      const currentList = JSON.parse(listData);
+      if (!Array.isArray(currentList)) return;
+      
+      // 実際に存在するファイルのみを残す
+      const validFiles = currentList.filter(fileId => {
+        const fileData = localStorage.getItem(`${this.STORAGE_PREFIX}${fileId}`);
+        return fileData !== null;
+      });
+      
+      localStorage.setItem(`${this.STORAGE_PREFIX}files`, JSON.stringify(updatedList));
+      
+      if (validFiles.length !== currentList.length) {
+        console.log(`Cleaned up file list: ${currentList.length} -> ${validFiles.length} files`);
+      }
+    } catch (error) {
+      console.warn('File list cleanup failed:', error);
     }
   }
 

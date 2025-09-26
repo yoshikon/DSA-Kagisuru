@@ -1,5 +1,5 @@
 import React from 'react';
-import { File as FileIcon, Download, Trash2, Eye, Clock } from 'lucide-react';
+import { File as FileIcon, Download, Trash2, Eye, Clock, Check } from 'lucide-react';
 
 interface FileData {
   id: string;
@@ -13,11 +13,23 @@ interface FileData {
 
 interface FileListProps {
   files: FileData[];
+  selectedFiles: string[];
+  onFileSelect: (fileId: string, selected: boolean) => void;
+  onSelectAll: (selected: boolean) => void;
   onDelete: (fileId: string) => void;
+  onBulkDelete: (fileIds: string[]) => void;
   onViewDetails: (fileId: string) => void;
 }
 
-export function FileList({ files, onDelete, onViewDetails }: FileListProps) {
+export function FileList({ 
+  files, 
+  selectedFiles, 
+  onFileSelect, 
+  onSelectAll, 
+  onDelete, 
+  onBulkDelete, 
+  onViewDetails 
+}: FileListProps) {
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
@@ -42,6 +54,9 @@ export function FileList({ files, onDelete, onViewDetails }: FileListProps) {
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };
 
+  const allSelected = files.length > 0 && selectedFiles.length === files.length;
+  const someSelected = selectedFiles.length > 0;
+
   if (files.length === 0) {
     return (
       <div className="text-center py-12">
@@ -64,7 +79,38 @@ export function FileList({ files, onDelete, onViewDetails }: FileListProps) {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-bold text-gray-900">送信済みファイル</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-bold text-gray-900">送信済みファイル ({files.length}件)</h2>
+        
+        {someSelected && (
+          <div className="flex items-center space-x-3">
+            <span className="text-sm text-gray-600">
+              {selectedFiles.length}件選択中
+            </span>
+            <button
+              onClick={() => onBulkDelete(selectedFiles)}
+              className="inline-flex items-center px-3 py-1.5 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors space-x-1"
+            >
+              <Trash2 className="h-4 w-4" />
+              <span>選択したファイルを削除</span>
+            </button>
+          </div>
+        )}
+      </div>
+
+      {files.length > 1 && (
+        <div className="flex items-center space-x-2 pb-2 border-b border-gray-200">
+          <label className="flex items-center space-x-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={allSelected}
+              onChange={(e) => onSelectAll(e.target.checked)}
+              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            />
+            <span className="text-sm text-gray-700">すべて選択</span>
+          </label>
+        </div>
+      )}
       
       <div className="space-y-3">
         {files.map((file) => {
@@ -75,10 +121,23 @@ export function FileList({ files, onDelete, onViewDetails }: FileListProps) {
           return (
             <div
               key={file.id}
-              className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+              className={`bg-white border rounded-lg p-4 hover:shadow-md transition-all ${
+                selectedFiles.includes(file.id) 
+                  ? 'border-blue-500 bg-blue-50' 
+                  : 'border-gray-200'
+              }`}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4 flex-1">
+                  <label className="flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={selectedFiles.includes(file.id)}
+                      onChange={(e) => onFileSelect(file.id, e.target.checked)}
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                  </label>
+                  
                   <div className="p-2 bg-blue-100 rounded-lg">
                     <FileIcon className="h-6 w-6 text-blue-600" />
                   </div>
@@ -137,7 +196,7 @@ export function FileList({ files, onDelete, onViewDetails }: FileListProps) {
 
               {/* 受信者一覧 */}
               <div className="mt-3 pt-3 border-t border-gray-100">
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2 ml-10">
                   {file.recipients.map((email, index) => (
                     <span
                       key={index}

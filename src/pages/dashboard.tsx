@@ -7,6 +7,7 @@ import { BarChart3, Shield, Users, HardDrive } from 'lucide-react';
 
 export function DashboardPage() {
   const [files, setFiles] = useState<any[]>([]);
+  const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
   const [stats, setStats] = useState({
     totalFiles: 0,
     totalRecipients: 0,
@@ -87,12 +88,78 @@ export function DashboardPage() {
 
   const handleDelete = async (fileId: string) => {
     if (confirm('このファイルを削除しますか？受信者はアクセスできなくなります。')) {
-      const success = await DatabaseService.deleteFile(fileId);
-      if (success) {
-        loadFiles(); // リロード
-      } else {
-        alert('削除に失敗しました');
+      try {
+        // データベースから削除を試行
+        const dbSuccess = await DatabaseService.deleteFile(fileId);
+        
+        // ローカルストレージからも削除
+        const localSuccess = FileStorage.deleteFile(fileId);
+        
+        if (dbSuccess || localSuccess) {
+          // 選択状態からも削除
+          setSelectedFiles(prev => prev.filter(id => id !== fileId));
+          loadFiles(); // リロード
+        } else {
+          alert('削除に失敗しました');
+        }
+      } catch (error) {
+        console.error('Delete error:', error);
+        alert('削除中にエラーが発生しました');
       }
+    }
+  };
+
+  const handleBulkDelete = async (fileIds: string[]) => {
+    if (confirm(`選択した${fileIds.length}件のファイルを削除しますか？受信者はアクセスできなくなります。`)) {
+      try {
+        let successCount = 0;
+        
+        for (const fileId of fileIds) {
+          // データベースから削除を試行
+          const dbSuccess = await DatabaseService.deleteFile(fileId);
+          
+          // ローカルストレージからも削除
+          const localSuccess = FileStorage.deleteFile(fileId);
+          
+          if (dbSuccess || localSuccess) {
+            successCount++;
+          }
+        }
+        
+        if (successCount > 0) {
+          setSelectedFiles([]); // 選択状態をクリア
+          loadFiles(); // リロード
+          
+          if (successCount === fileIds.length) {
+            alert(`${successCount}件のファイルを削除しました`);
+          } else {
+            alert(`${successCount}/${fileIds.length}件のファイルを削除しました`);
+          }
+        } else {
+          alert('削除に失敗しました');
+        }
+      } catch (error) {
+        console.error('Bulk delete error:', error);
+        alert('削除中にエラーが発生しました');
+      }
+    }
+  };
+
+  const handleFileSelect = (fileId: string, selected: boolean) => {
+    setSelectedFiles(prev => {
+      if (selected) {
+        return [...prev, fileId];
+      } else {
+        return prev.filter(id => id !== fileId);
+      }
+    });
+  };
+
+  const handleSelectAll = (selected: boolean) => {
+    if (selected) {
+      setSelectedFiles(files.map(file => file.id));
+    } else {
+      setSelectedFiles([]);
     }
   };
 
@@ -194,7 +261,11 @@ export function DashboardPage() {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
           <FileList
             files={files}
+            selectedFiles={selectedFiles}
+            onFileSelect={handleFileSelect}
+            onSelectAll={handleSelectAll}
             onDelete={handleDelete}
+            onBulkDelete={handleBulkDelete}
             onViewDetails={handleViewDetails}
           />
         </div>
