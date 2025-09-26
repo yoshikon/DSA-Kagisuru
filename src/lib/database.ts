@@ -88,8 +88,9 @@ export class DatabaseService {
 
   // ファイル情報取得
   static async getFileById(fileId: string): Promise<any | null> {
-    if (!supabase) {
-      console.warn('Supabaseが利用できません。getFileByIdをスキップします。');
+    // Supabase設定の厳密なチェック
+    if (!supabase || !isSupabaseAvailable()) {
+      console.info('Supabase設定が無効または未設定のため、getFileByIdをスキップします。');
       return null;
     }
 

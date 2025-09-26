@@ -6,12 +6,33 @@ const supabaseServiceRoleKey = import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
 
 // 環境変数が適切に設定されているかチェック
 const isValidSupabaseConfig = (url: string, key: string): boolean => {
-  return url && 
-         key && 
-         url !== 'your-supabase-url' && 
-         key !== 'your-supabase-anon-key' &&
-         url.startsWith('https://') &&
-         key.length > 20;
+  // より厳密な検証
+  if (!url || !key) return false;
+  
+  // プレースホルダー値をチェック
+  const placeholders = [
+    'your-supabase-url',
+    'your-supabase-anon-key',
+    'undefined',
+    'null',
+    ''
+  ];
+  
+  if (placeholders.includes(url) || placeholders.includes(key)) {
+    return false;
+  }
+  
+  // URL形式の検証
+  if (!url.startsWith('https://') || !url.includes('.supabase.co')) {
+    return false;
+  }
+  
+  // キー長の検証（Supabaseの匿名キーは通常100文字以上）
+  if (key.length < 100) {
+    return false;
+  }
+  
+  return true;
 };
 
 // Supabaseクライアントの初期化（環境変数が設定されている場合のみ）
