@@ -7,7 +7,8 @@ export class EmailService {
     fileId: string,
     fileName: string,
     accessTokens: { [email: string]: string },
-    senderMessage?: string
+    senderMessage?: string,
+    requireVerification: boolean = true
   ): Promise<boolean> {
     try {
       const baseUrl = import.meta.env.VITE_APP_URL || window.location.origin;
@@ -21,8 +22,8 @@ export class EmailService {
         
         await this.sendEmail({
           to: email,
-          subject: `【カギスル】暗号化ファイル「${fileName}」が共有されました`,
-          html: this.generateEmailTemplate(fileName, accessUrl, senderMessage),
+          subject: `【カギエース】暗号化ファイル「${fileName}」が共有されました`,
+          html: this.generateEmailTemplate(fileName, accessUrl, senderMessage, requireVerification, email),
           fileId: fileId
         });
       }
@@ -79,14 +80,16 @@ export class EmailService {
   private static generateEmailTemplate(
     fileName: string,
     accessUrl: string,
-    senderMessage?: string
+    senderMessage?: string,
+    requireVerification: boolean = true,
+    recipientEmail?: string
   ): string {
     return `
       <!DOCTYPE html>
       <html>
       <head>
         <meta charset="utf-8">
-        <title>カギスル - 暗号化ファイル共有</title>
+        <title>カギエース - 暗号化ファイル共有</title>
         <style>
           body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
           .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -97,6 +100,7 @@ export class EmailService {
           .message { background: #e3f2fd; padding: 15px; border-radius: 6px; margin: 15px 0; }
           .footer { text-align: center; color: #666; font-size: 12px; margin-top: 30px; }
           .security-note { background: #f0f9ff; border: 1px solid #bae6fd; padding: 15px; border-radius: 6px; margin: 20px 0; }
+          .verification-note { background: #f0fdf4; border: 1px solid #bbf7d0; padding: 15px; border-radius: 6px; margin: 20px 0; }
         </style>
       </head>
       <body>
@@ -116,6 +120,14 @@ export class EmailService {
               <p><strong>有効期限:</strong> 送信から指定日数後に自動削除</p>
             </div>
 
+            ${requireVerification ? `
+              <div class="verification-note">
+                <h4>🔒 受信者認証が有効です</h4>
+                <p><strong>このファイルはあなた専用に送信されました。</strong></p>
+                <p>受信者: <code>${recipientEmail}</code></p>
+                <p>送り間違え防止機能により、指定された受信者以外はアクセスできません。</p>
+              </div>
+            ` : ''}
             ${senderMessage ? `
               <div class="message">
                 <h4>💬 送信者からのメッセージ:</h4>
@@ -136,6 +148,7 @@ export class EmailService {
               <h4>🛡️ セキュリティについて</h4>
               <ul>
                 <li>ファイルは軍用レベルのAES-256暗号化で保護されています</li>
+                ${requireVerification ? '<li><strong>受信者認証により、指定された方のみアクセス可能です</strong></li>' : ''}
                 <li>アクセスには生体認証またはワンタイムパスワードが必要です</li>
                 <li>ファイルは指定期限後に自動削除されます</li>
                 <li>このリンクは他の人と共有しないでください</li>
@@ -147,6 +160,7 @@ export class EmailService {
           <div class="footer">
             <p>このメールは カギエース から送信されました</p>
             <p>心当たりがない場合は、このメールを削除してください</p>
+            ${requireVerification ? '<p><strong>🔒 送り間違え防止機能が有効です</strong></p>' : ''}
           </div>
         </div>
       </body>

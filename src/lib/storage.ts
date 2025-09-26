@@ -15,7 +15,7 @@ export class FileStorage {
     originalName: string;
     mimeType: string;
     size: number;
-  }, recipients: string[], expiryDays: number = 7, message?: string): Promise<string> {
+  }, recipients: string[], expiryDays: number = 7, message?: string, requireVerification: boolean = true): Promise<string> {
     try {
       // 環境変数チェック
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -37,7 +37,8 @@ export class FileStorage {
             fileData, 
             recipients, 
             expiryDays, 
-            message
+            message,
+            requireVerification
           );
           fileId = result.fileId;
           accessTokens = result.accessTokens;
@@ -78,7 +79,8 @@ export class FileStorage {
         createdAt: new Date().toISOString(),
         expiresAt: new Date(Date.now() + expiryDays * 24 * 60 * 60 * 1000).toISOString(),
         downloadCount: 0,
-        message: message
+        message: message,
+        requireVerification: requireVerification
       };
 
       localStorage.setItem(`${this.STORAGE_PREFIX}${fileId}`, JSON.stringify(fileRecord));
@@ -96,7 +98,8 @@ export class FileStorage {
           fileId,
           fileData.originalName,
           accessTokens,
-          message
+          message,
+          requireVerification
         );
         console.log('✅ メール送信完了');
       } catch (emailError) {

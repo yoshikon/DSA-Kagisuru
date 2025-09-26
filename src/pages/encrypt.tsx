@@ -15,6 +15,7 @@ export function EncryptPage() {
   const [recipients, setRecipients] = useState<string[]>([]);
   const [expiryDays, setExpiryDays] = useState(7);
   const [message, setMessage] = useState('');
+  const [requireVerification, setRequireVerification] = useState(true);
   const [isEncrypting, setIsEncrypting] = useState(false);
   const [progress, setProgress] = useState<EncryptionProgress>({
     step: 'preparing',
@@ -73,7 +74,8 @@ export function EncryptPage() {
         encryptedFile, 
         recipients, 
         expiryDays, 
-        message
+        message,
+        requireVerification
       );
       
       setProgress({
@@ -175,6 +177,8 @@ export function EncryptPage() {
                 onRecipientsChange={setRecipients}
                 maxRecipients={5}
                 disabled={isEncrypting}
+                requireVerification={requireVerification}
+                onVerificationChange={setRequireVerification}
               />
             </div>
 

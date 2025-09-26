@@ -10,7 +10,7 @@ export class DatabaseService {
     originalName: string;
     mimeType: string;
     size: number;
-  }, recipients: string[], expiryDays: number, message?: string): Promise<{ fileId: string; accessTokens: { [email: string]: string } }> {
+  }, recipients: string[], expiryDays: number, message?: string, requireVerification: boolean = true): Promise<{ fileId: string; accessTokens: { [email: string]: string } }> {
     // Supabaseが利用できない場合はエラーを投げる
     if (!isSupabaseAvailable() || !supabase) {
       throw new Error('データベースサービスが利用できません。環境変数を確認してください。');
@@ -37,7 +37,8 @@ export class DatabaseService {
           iv: ivBase64,
           expires_at: expiresAt.toISOString(),
           message: message || null,
-          download_count: 0
+          download_count: 0,
+          require_verification: requireVerification
         })
         .select()
         .single();

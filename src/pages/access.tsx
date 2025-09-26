@@ -20,7 +20,8 @@ export function AccessPage() {
         if (data && data.encrypted_files) {
           setFileData({
             ...data.encrypted_files,
-            recipientEmail: data.email
+            recipientEmail: data.email,
+            requireVerification: data.encrypted_files.require_verification || false
           });
         } else {
           setError('ファイルが見つかりません');
@@ -158,6 +159,9 @@ export function AccessPage() {
         {!isAuthenticated ? (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
             <AuthMethodSelector
+              recipientEmail={fileData.recipientEmail}
+              requiredEmail={fileData.recipientEmail}
+              requireVerification={fileData.requireVerification}
               onWebAuthn={handleWebAuthn}
               onEmailOTP={handleEmailOTP}
               loading={authLoading}
