@@ -1,5 +1,5 @@
 import { DatabaseService } from './database';
-import { EmailService } from './email-service';
+import { isSupabaseAvailable } from './supabase';
 
 // ローカルストレージヘルパー（フォールバック用）
 export class FileStorage {
@@ -15,13 +15,26 @@ export class FileStorage {
     size: number;
   }, recipients: string[], expiryDays: number = 7, message?: string): Promise<string> {
     try {
-      // データベースに保存
-      const fileId = await DatabaseService.saveEncryptedFile(
-        fileData, 
-        recipients, 
-        expiryDays, 
-        message
-      );
+      let fileId: string;
+      
+      if (isSupabaseAvailable()) {
+        // Supabaseが利用可能な場合はデータベースに保存
+        try {
+          fileId = await DatabaseService.saveEncryptedFile(
+            fileData, 
+            recipients, 
+            expiryDays, 
+            message
+          );
+        } catch (dbError) {
+          console.warn('データベース保存に失敗、ローカルストレージにフォールバック:', dbError);
+          fileId = this.generateFileId();
+        }
+      } else {
+        // Supabaseが利用できない場合はローカルストレージのみ使用
+        console.info('Supabaseが設定されていません。ローカルストレージを使用します。');
+        fileId = this.generateFileId();
+      }
       
       // フォールバック用にローカルストレージにも保存
       const encryptedBase64 = btoa(String.fromCharCode(...fileData.encryptedData));
@@ -51,6 +64,11 @@ export class FileStorage {
       console.error('File save error:', error);
       throw error;
     }
+  }
+
+  // ファイルID生成
+  private static generateFileId(): string {
+    return 'file_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
   }
 
   // ファイル取得

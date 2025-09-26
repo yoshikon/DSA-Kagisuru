@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { supabase, isSupabaseAvailable } from './supabase';
 import type { EncryptedFile, FileRecipient } from '../types';
 
 export class DatabaseService {
@@ -11,6 +11,11 @@ export class DatabaseService {
     mimeType: string;
     size: number;
   }, recipients: string[], expiryDays: number, message?: string): Promise<string> {
+    // Supabaseが利用できない場合はエラーを投げる
+    if (!isSupabaseAvailable() || !supabase) {
+      throw new Error('データベースサービスが利用できません。環境変数を確認してください。');
+    }
+
     try {
       // ArrayBufferをBase64に変換
       const encryptedBase64 = btoa(String.fromCharCode(...fileData.encryptedData));

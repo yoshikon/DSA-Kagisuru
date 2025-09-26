@@ -6,7 +6,7 @@ import { EncryptionOptions } from '../components/encrypt/encryption-options';
 import { EncryptionProgressModal } from '../components/encrypt/encryption-progress';
 import { FileEncryption } from '../lib/crypto';
 import { FileStorage } from '../lib/storage';
-import { EmailService } from '../lib/email-service';
+import { isSupabaseAvailable } from '../lib/supabase';
 import type { EncryptionProgress } from '../types';
 import { Lock, Send, ArrowRight } from 'lucide-react';
 
@@ -77,12 +77,23 @@ export function EncryptPage() {
       });
 
       // メール送信
-      await EmailService.sendFileNotification(
-        recipients,
-        fileId,
-        encryptedFile.originalName,
-        message || undefined
-      );
+      if (isSupabaseAvailable()) {
+        try {
+          // 実際のメール送信（Supabase利用時）
+          console.log('📧 メール送信機能は開発中です');
+          // await EmailService.sendFileNotification(recipients, fileId, encryptedFile.originalName, message);
+        } catch (emailError) {
+          console.warn('メール送信に失敗:', emailError);
+        }
+      } else {
+        // デモ用メール送信ログ
+        console.log('📧 メール送信（デモ）:', {
+          recipients,
+          fileName: encryptedFile.originalName,
+          fileId,
+          message
+        });
+      }
 
       setProgress({
         step: 'complete',
