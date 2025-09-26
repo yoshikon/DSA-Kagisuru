@@ -15,28 +15,37 @@ export class FileStorage {
     size: number;
   }, recipients: string[], expiryDays: number = 7, message?: string): Promise<string> {
     try {
-      let fileId: string;
+      // 環境変数チェック
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
       
-      if (isSupabaseAvailable()) {
-        // Supabaseが利用可能な場合はデータベースに保存
+      let fileId: string;
+      let useDatabase = false;
+      
+      // Supabaseの設定が完全かチェック
+      if (supabaseUrl && supabaseKey && 
+          supabaseUrl !== 'your-supabase-url' && 
+          supabaseKey !== 'your-supabase-anon-key') {
         try {
+          console.log('Supabaseデータベースに保存を試行中...');
           fileId = await DatabaseService.saveEncryptedFile(
             fileData, 
             recipients, 
             expiryDays, 
             message
           );
+          useDatabase = true;
+          console.log('データベース保存成功:', fileId);
         } catch (dbError) {
-          console.warn('データベース保存に失敗、ローカルストレージにフォールバック:', dbError);
+          console.warn('データベース保存に失敗、ローカルストレージを使用:', dbError);
           fileId = this.generateFileId();
         }
       } else {
-        // Supabaseが利用できない場合はローカルストレージのみ使用
-        console.info('Supabaseが設定されていません。ローカルストレージを使用します。');
+        console.info('Supabase環境変数が未設定です。ローカルストレージを使用します。');
         fileId = this.generateFileId();
       }
       
-      // フォールバック用にローカルストレージにも保存
+      // ローカルストレージに保存（バックアップまたはメイン）
       const encryptedBase64 = btoa(String.fromCharCode(...fileData.encryptedData));
       const saltBase64 = btoa(String.fromCharCode(...fileData.salt));
       const ivBase64 = btoa(String.fromCharCode(...fileData.iv));
@@ -58,6 +67,10 @@ export class FileStorage {
 
       localStorage.setItem(`${this.STORAGE_PREFIX}${fileId}`, JSON.stringify(fileRecord));
       this.updateFileList(fileId);
+      
+      if (!useDatabase) {
+        console.log('ローカルストレージ保存完了:', fileId);
+      }
       
       return fileId;
     } catch (error) {
