@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Download, X, FolderOpen, CreditCard as Edit3, Check } from 'lucide-react';
+import { Download, X, FolderOpen, CreditCard as Edit3, Check, Folder } from 'lucide-react';
 
 interface DownloadModalProps {
   isOpen: boolean;
@@ -27,7 +27,7 @@ export function DownloadModal({
         ? originalFileName 
         : `【施錠済み】${originalFileName}.kgsr`;
       setFileName(defaultName);
-      setSaveLocation('ダウンロード'); // デフォルトの保存先
+      setSaveLocation(''); // 初期状態は未選択
     }
   }, [isOpen, originalFileName]);
 
@@ -45,17 +45,35 @@ export function DownloadModal({
   };
 
   const handleLocationSelect = () => {
-    // ブラウザの制限により、実際の保存先選択は制限されているため
-    // ユーザーに選択肢を提供
-    const locations = ['ダウンロード', 'デスクトップ', 'ドキュメント', 'その他'];
-    const selected = prompt('保存先を選択してください:\n1. ダウンロード\n2. デスクトップ\n3. ドキュメント\n4. その他', '1');
+    // ファイル保存ダイアログを模擬（ブラウザの制限により実際のフォルダ選択は不可）
+    // 隠しinput要素を作成してクリック
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.webkitdirectory = true; // フォルダ選択を有効化（一部ブラウザ対応）
+    input.style.display = 'none';
     
-    if (selected) {
-      const index = parseInt(selected) - 1;
-      if (index >= 0 && index < locations.length) {
-        setSaveLocation(locations[index]);
+    input.onchange = (e) => {
+      const target = e.target as HTMLInputElement;
+      if (target.files && target.files.length > 0) {
+        // 選択されたフォルダのパスを取得（可能な場合）
+        const file = target.files[0];
+        const path = file.webkitRelativePath;
+        if (path) {
+          const folderName = path.split('/')[0];
+          setSaveLocation(folderName || 'ダウンロード');
+        } else {
+          setSaveLocation('ダウンロード');
+        }
       }
-    }
+      document.body.removeChild(input);
+    };
+    
+    input.oncancel = () => {
+      document.body.removeChild(input);
+    };
+    
+    document.body.appendChild(input);
+    input.click();
   };
 
   if (!isOpen) return null;
@@ -144,18 +162,22 @@ export function DownloadModal({
             <label className="block text-sm font-medium text-gray-700 mb-2">
               保存先
             </label>
-            <button
+            <div
               onClick={handleLocationSelect}
-              className="w-full flex items-center justify-between bg-gray-50 border border-gray-200 rounded-xl px-3 py-3 hover:bg-gray-100 transition-colors"
+              className="w-full flex items-center justify-center border-2 border-dashed border-gray-300 rounded-xl px-4 py-8 hover:border-gray-400 hover:bg-gray-50 transition-all duration-200 cursor-pointer"
             >
-              <div className="flex items-center space-x-2">
-                <FolderOpen className="h-4 w-4 text-gray-500" />
-                <span className="text-sm text-gray-900">{saveLocation}</span>
+              <div className="text-center">
+                <Folder className="mx-auto h-8 w-8 text-gray-400 mb-2" />
+                <p className="text-sm font-medium text-gray-900 mb-1">
+                  {saveLocation || 'フォルダをクリックして選択'}
+                </p>
+                <p className="text-xs text-gray-500">
+                  保存先フォルダを指定してください
+                </p>
               </div>
-              <span className="text-xs text-gray-500">変更</span>
-            </button>
+            </div>
             <p className="mt-1 text-xs text-gray-500">
-              ブラウザのデフォルト設定に従ってダウンロードされます
+              ブラウザの制限により、実際の保存先はブラウザの設定に従います
             </p>
           </div>
 
