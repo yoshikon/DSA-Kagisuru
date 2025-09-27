@@ -7,7 +7,7 @@ import { FileUnlockPage } from '../components/dashboard/file-unlock-page';
 import { AddressBookPage } from '../components/dashboard/address-book-page';
 import { DatabaseService } from '../lib/database';
 import { FileStorage } from '../lib/storage';
-import { BarChart3, Shield, Users, HardDrive, Lock, Unlock, BookOpen, Grid3X3 } from 'lucide-react';
+import { BarChart3, Shield, Users, HardDrive, Lock, Unlock, BookOpen, Grid3x3 as Grid3X3 } from 'lucide-react';
 
 export function DashboardPage() {
   const [files, setFiles] = useState<any[]>([]);
