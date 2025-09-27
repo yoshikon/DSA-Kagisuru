@@ -88,32 +88,32 @@ export function ServiceOverview({ onNavigate }: ServiceOverviewProps) {
         {services.map((service) => {
           const IconComponent = service.icon;
           const colorClasses = {
-            blue: 'bg-blue-600 hover:bg-blue-700',
-            green: 'bg-green-600 hover:bg-green-700',
-            purple: 'bg-purple-600 hover:bg-purple-700',
-            orange: 'bg-orange-600 hover:bg-orange-700'
+            blue: 'bg-gradient-to-br from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-blue-500/25',
+            green: 'bg-gradient-to-br from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 shadow-green-500/25',
+            purple: 'bg-gradient-to-br from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 shadow-purple-500/25',
+            orange: 'bg-gradient-to-br from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 shadow-orange-500/25'
           };
 
           return (
-            <div key={service.id} className="bg-gray-800 text-white rounded-lg p-6 space-y-4">
+            <div key={service.id} className="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-8 space-y-6 shadow-2xl border border-slate-700 hover:shadow-3xl hover:transform hover:scale-105 transition-all duration-300 backdrop-blur-sm">
               <div className="flex items-center space-x-3">
-                <div className="p-2 bg-gray-700 rounded-lg">
-                  <IconComponent className="h-6 w-6" />
+                <div className="p-3 bg-gradient-to-br from-slate-700 to-slate-600 rounded-xl shadow-lg">
+                  <IconComponent className="h-7 w-7" />
                 </div>
-                <h3 className="text-xl font-semibold">{service.title}</h3>
+                <h3 className="text-2xl font-bold">{service.title}</h3>
               </div>
 
               <div className="space-y-3">
-                <p className="text-gray-300 whitespace-pre-line">
+                <p className="text-slate-300 whitespace-pre-line leading-relaxed">
                   {service.description}
                 </p>
 
                 {service.features.length > 0 && (
-                  <div className="flex items-center space-x-4 text-sm">
+                  <div className="flex items-center space-x-4 text-sm mt-4">
                     {service.features.map((feature, index) => (
                       <div key={index} className="flex items-center space-x-1">
-                        <Shield className="h-3 w-3 text-green-400" />
-                        <span className="text-green-400">{feature}</span>
+                        <Shield className="h-4 w-4 text-emerald-400" />
+                        <span className="text-emerald-400 font-medium">{feature}</span>
                       </div>
                     ))}
                   </div>
@@ -123,7 +123,7 @@ export function ServiceOverview({ onNavigate }: ServiceOverviewProps) {
               {service.buttonText && (
                 <button
                   onClick={() => handleServiceClick(service.id)}
-                  className={`inline-flex items-center space-x-2 px-4 py-2 ${colorClasses[service.color]} text-white rounded-lg font-medium transition-colors`}
+                  className={`inline-flex items-center space-x-2 px-6 py-3 ${colorClasses[service.color]} text-white rounded-xl font-semibold transition-all duration-300 hover:transform hover:scale-105 shadow-lg`}
                 >
                   <span>{service.buttonText}</span>
                   <ArrowRight className="h-4 w-4" />
@@ -135,12 +135,14 @@ export function ServiceOverview({ onNavigate }: ServiceOverviewProps) {
       </div>
 
       {/* 追加情報 */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-8 shadow-xl">
         <div className="flex items-start space-x-3">
-          <Shield className="h-6 w-6 text-blue-600 mt-1" />
+          <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl">
+            <Shield className="h-6 w-6 text-white" />
+          </div>
           <div>
-            <h4 className="font-semibold text-blue-900 mb-2">セキュリティについて</h4>
-            <ul className="text-sm text-blue-800 space-y-1">
+            <h4 className="font-bold text-blue-900 mb-3 text-lg">セキュリティについて</h4>
+            <ul className="text-sm text-blue-800 space-y-2">
               <li>• すべてのファイルはAES-256暗号化で保護されます</li>
               <li>• パスワードの共有は不要で、受信者認証により安全性を確保</li>
               <li>• ファイルは指定期限後に自動削除されます</li>

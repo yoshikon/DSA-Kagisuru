@@ -203,81 +203,97 @@ export function DashboardPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* サイドバーナビゲーション */}
         <div className="flex gap-8">
-          <div className="w-64 flex-shrink-0">
-            <nav className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">メニュー</h2>
-              <div className="space-y-2">
+          <div className="w-72 flex-shrink-0">
+            <nav className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl shadow-2xl border border-slate-700 p-6 backdrop-blur-sm">
+              <div className="flex items-center space-x-3 mb-8">
+                <div className="p-2 bg-blue-600 rounded-xl">
+                  <BarChart3 className="h-6 w-6 text-white" />
+                </div>
+                <h2 className="text-xl font-bold text-white">ダッシュボード</h2>
+              </div>
+              <div className="space-y-3">
                 <button
                   onClick={() => setCurrentView('overview')}
-                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left transition-all duration-200 ${
                     currentView === 'overview' 
-                      ? 'bg-blue-100 text-blue-900' 
-                      : 'text-gray-700 hover:bg-gray-100'
+                      ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg transform scale-105' 
+                      : 'text-slate-300 hover:bg-slate-700 hover:text-white hover:transform hover:scale-105'
                   }`}
                 >
                   <Grid3X3 className="h-5 w-5" />
-                  <span>サービス一覧</span>
+                  <span className="font-medium">サービス一覧</span>
                 </button>
                 
                 <button
                   onClick={() => setCurrentView('files')}
-                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left transition-all duration-200 ${
                     currentView === 'files' 
-                      ? 'bg-blue-100 text-blue-900' 
-                      : 'text-gray-700 hover:bg-gray-100'
+                      ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg transform scale-105' 
+                      : 'text-slate-300 hover:bg-slate-700 hover:text-white hover:transform hover:scale-105'
                   }`}
                 >
                   <BarChart3 className="h-5 w-5" />
-                  <span>ファイル履歴</span>
+                  <span className="font-medium">ファイル履歴</span>
                 </button>
                 
                 <button
                   onClick={() => setCurrentView('lock')}
-                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left transition-all duration-200 ${
                     currentView === 'lock' 
-                      ? 'bg-blue-100 text-blue-900' 
-                      : 'text-gray-700 hover:bg-gray-100'
+                      ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg transform scale-105' 
+                      : 'text-slate-300 hover:bg-slate-700 hover:text-white hover:transform hover:scale-105'
                   }`}
                 >
                   <Lock className="h-5 w-5" />
-                  <span>ファイル施錠</span>
+                  <span className="font-medium">ファイル施錠</span>
                 </button>
                 
                 <button
                   onClick={() => setCurrentView('unlock')}
-                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left transition-all duration-200 ${
                     currentView === 'unlock' 
-                      ? 'bg-blue-100 text-blue-900' 
-                      : 'text-gray-700 hover:bg-gray-100'
+                      ? 'bg-gradient-to-r from-green-600 to-green-500 text-white shadow-lg transform scale-105' 
+                      : 'text-slate-300 hover:bg-slate-700 hover:text-white hover:transform hover:scale-105'
                   }`}
                 >
                   <Unlock className="h-5 w-5" />
-                  <span>ファイル解錠</span>
+                  <span className="font-medium">ファイル解錠</span>
                 </button>
                 
                 <button
                   onClick={() => setCurrentView('addressbook')}
-                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left transition-all duration-200 ${
                     currentView === 'addressbook' 
-                      ? 'bg-blue-100 text-blue-900' 
-                      : 'text-gray-700 hover:bg-gray-100'
+                      ? 'bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-lg transform scale-105' 
+                      : 'text-slate-300 hover:bg-slate-700 hover:text-white hover:transform hover:scale-105'
                   }`}
                 >
                   <BookOpen className="h-5 w-5" />
-                  <span>アドレス帳</span>
+                  <span className="font-medium">アドレス帳</span>
                 </button>
                 
                 <button
                   onClick={() => setCurrentView('password')}
-                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left transition-all duration-200 ${
                     currentView === 'password' 
-                      ? 'bg-blue-100 text-blue-900' 
-                      : 'text-gray-700 hover:bg-gray-100'
+                      ? 'bg-gradient-to-r from-orange-600 to-orange-500 text-white shadow-lg transform scale-105' 
+                      : 'text-slate-300 hover:bg-slate-700 hover:text-white hover:transform hover:scale-105'
                   }`}
                 >
                   <Key className="h-5 w-5" />
-                  <span>パスワード設定</span>
+                  <span className="font-medium">パスワード設定</span>
                 </button>
+              </div>
+              
+              {/* セキュリティバッジ */}
+              <div className="mt-8 p-4 bg-gradient-to-r from-emerald-600 to-emerald-500 rounded-xl">
+                <div className="flex items-center space-x-2">
+                  <Shield className="h-4 w-4 text-white" />
+                  <span className="text-sm font-medium text-white">AES-256暗号化</span>
+                </div>
+                <p className="text-xs text-emerald-100 mt-1">
+                  軍用レベルのセキュリティ
+                </p>
               </div>
             </nav>
           </div>
@@ -290,7 +306,7 @@ export function DashboardPage() {
             {currentView === 'files' && (
               <div>
                 <div className="mb-8">
-                  <div className="flex items-center space-x-3 mb-4">
+                  <div className="flex items-center space-x-4 mb-6">
                     <BarChart3 className="h-8 w-8 text-blue-600" />
                     <h1 className="text-3xl font-bold text-gray-900">ファイル履歴</h1>
                   </div>
@@ -301,57 +317,57 @@ export function DashboardPage() {
 
                 {/* 統計カード */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                  <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                  <div className="bg-gradient-to-br from-white to-blue-50 rounded-2xl shadow-xl border border-blue-100 p-6 hover:shadow-2xl transition-all duration-300 hover:transform hover:scale-105">
                     <div className="flex items-center">
-                      <div className="p-2 bg-blue-100 rounded-lg">
+                      <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg">
                         <Shield className="h-6 w-6 text-blue-600" />
                       </div>
                       <div className="ml-4">
-                        <p className="text-sm font-medium text-gray-600">送信ファイル</p>
-                        <p className="text-2xl font-bold text-gray-900">{stats.totalFiles}</p>
+                        <p className="text-sm font-semibold text-blue-600">送信ファイル</p>
+                        <p className="text-3xl font-bold text-blue-900">{stats.totalFiles}</p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                  <div className="bg-gradient-to-br from-white to-green-50 rounded-2xl shadow-xl border border-green-100 p-6 hover:shadow-2xl transition-all duration-300 hover:transform hover:scale-105">
                     <div className="flex items-center">
-                      <div className="p-2 bg-green-100 rounded-lg">
+                      <div className="p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg">
                         <Users className="h-6 w-6 text-green-600" />
                       </div>
                       <div className="ml-4">
-                        <p className="text-sm font-medium text-gray-600">総受信者数</p>
-                        <p className="text-2xl font-bold text-gray-900">{stats.totalRecipients}</p>
+                        <p className="text-sm font-semibold text-green-600">総受信者数</p>
+                        <p className="text-3xl font-bold text-green-900">{stats.totalRecipients}</p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                  <div className="bg-gradient-to-br from-white to-orange-50 rounded-2xl shadow-xl border border-orange-100 p-6 hover:shadow-2xl transition-all duration-300 hover:transform hover:scale-105">
                     <div className="flex items-center">
-                      <div className="p-2 bg-orange-100 rounded-lg">
+                      <div className="p-3 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-lg">
                         <BarChart3 className="h-6 w-6 text-orange-600" />
                       </div>
                       <div className="ml-4">
-                        <p className="text-sm font-medium text-gray-600">総ダウンロード</p>
-                        <p className="text-2xl font-bold text-gray-900">{stats.totalDownloads}</p>
+                        <p className="text-sm font-semibold text-orange-600">総ダウンロード</p>
+                        <p className="text-3xl font-bold text-orange-900">{stats.totalDownloads}</p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                  <div className="bg-gradient-to-br from-white to-purple-50 rounded-2xl shadow-xl border border-purple-100 p-6 hover:shadow-2xl transition-all duration-300 hover:transform hover:scale-105">
                     <div className="flex items-center">
-                      <div className="p-2 bg-purple-100 rounded-lg">
+                      <div className="p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg">
                         <HardDrive className="h-6 w-6 text-purple-600" />
                       </div>
                       <div className="ml-4">
-                        <p className="text-sm font-medium text-gray-600">使用容量</p>
-                        <p className="text-2xl font-bold text-gray-900">{formatFileSize(stats.storageUsed)}</p>
+                        <p className="text-sm font-semibold text-purple-600">使用容量</p>
+                        <p className="text-3xl font-bold text-purple-900">{formatFileSize(stats.storageUsed)}</p>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 {/* ファイル一覧 */}
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+                <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 p-8 backdrop-blur-sm">
                   <FileList
                     files={files}
                     selectedFiles={selectedFiles}

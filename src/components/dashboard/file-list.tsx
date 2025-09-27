@@ -121,10 +121,10 @@ export function FileList({
           return (
             <div
               key={file.id}
-              className={`bg-white border rounded-lg p-4 hover:shadow-md transition-all ${
+              className={`bg-gradient-to-r from-white to-gray-50 border rounded-2xl p-6 hover:shadow-2xl transition-all duration-300 hover:transform hover:scale-[1.02] ${
                 selectedFiles.includes(file.id) 
-                  ? 'border-blue-500 bg-blue-50' 
-                  : 'border-gray-200'
+                  ? 'border-blue-500 bg-gradient-to-r from-blue-50 to-blue-100 shadow-lg shadow-blue-500/25' 
+                  : 'border-gray-200 hover:border-gray-300'
               }`}
             >
               <div className="flex items-center justify-between">
@@ -138,7 +138,7 @@ export function FileList({
                     />
                   </label>
                   
-                  <div className="p-2 bg-blue-100 rounded-lg">
+                  <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg">
                     <FileIcon className="h-6 w-6 text-blue-600" />
                   </div>
                   
@@ -146,7 +146,7 @@ export function FileList({
                     <h3 className="font-medium text-gray-900 truncate">
                       {file.originalName}
                     </h3>
-                    <div className="flex items-center space-x-4 mt-1 text-sm text-gray-500">
+                    <div className="flex items-center space-x-4 mt-2 text-sm text-gray-600">
                       <span>{formatFileSize(file.size)}</span>
                       <span>受信者: {file.recipients.length}名</span>
                       <span className="flex items-center">
@@ -159,7 +159,7 @@ export function FileList({
 
                 <div className="flex items-center space-x-4">
                   <div className="text-right">
-                    <div className="flex items-center text-sm">
+                    <div className="flex items-center text-sm font-medium">
                       <Clock className="h-3 w-3 mr-1" />
                       <span className={`font-medium ${
                         isExpired ? 'text-red-600' : 
@@ -169,7 +169,7 @@ export function FileList({
                          daysLeft === 1 ? '残り1日' : `残り${daysLeft}日`}
                       </span>
                     </div>
-                    <div className="text-xs text-gray-500 mt-1">
+                    <div className="text-xs text-gray-600 mt-1">
                       {formatDate(file.createdAt)}作成
                     </div>
                   </div>
@@ -177,7 +177,7 @@ export function FileList({
                   <div className="flex items-center space-x-2">
                     <button
                       onClick={() => onViewDetails(file.id)}
-                      className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                      className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200 hover:transform hover:scale-110"
                       title="詳細を表示"
                     >
                       <Eye className="h-4 w-4" />
@@ -185,7 +185,7 @@ export function FileList({
                     
                     <button
                       onClick={() => onDelete(file.id)}
-                      className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200 hover:transform hover:scale-110"
                       title="削除"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -195,12 +195,12 @@ export function FileList({
               </div>
 
               {/* 受信者一覧 */}
-              <div className="mt-3 pt-3 border-t border-gray-100">
-                <div className="flex flex-wrap gap-2 ml-10">
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                <div className="flex flex-wrap gap-2 ml-12">
                   {file.recipients.map((email, index) => (
                     <span
                       key={index}
-                      className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800"
+                      className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 border border-blue-300"
                     >
                       {email}
                     </span>
