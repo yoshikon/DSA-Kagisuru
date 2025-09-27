@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Lock, User, Upload, Clock, ChevronDown, Download, X } from 'lucide-react';
 import { FileUploadZone } from '../ui/file-upload-zone';
 import { FileEncryption } from '../../lib/crypto';
+import { SendFilePage } from './send-file-page';
 
 export function FileLockPage() {
   const [sender, setSender] = useState('今野');
@@ -13,6 +14,7 @@ export function FileLockPage() {
     encryptedData: Uint8Array;
     fileName: string;
   } | null>(null);
+  const [showSendPage, setShowSendPage] = useState(false);
 
   const handleLock = async () => {
     if (!recipient || files.length === 0) {
@@ -63,11 +65,32 @@ export function FileLockPage() {
     URL.revokeObjectURL(url);
   };
 
+  const handleDownloadAndSend = () => {
+    // まずファイルをダウンロード
+    handleDownload();
+    
+    // 少し待ってから送信ページに遷移
+    setTimeout(() => {
+      setShowSendPage(true);
+    }, 500);
+  };
+
   const handleReset = () => {
     setLockedFile(null);
     setFiles([]);
     setRecipient('');
+    setShowSendPage(false);
   };
+
+  // 送信ページを表示する場合
+  if (showSendPage) {
+    return (
+      <SendFilePage 
+        lockedFile={lockedFile}
+        onBack={handleReset}
+      />
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -210,7 +233,7 @@ export function FileLockPage() {
 
             {/* ダウンロードボタン */}
             <button
-              onClick={handleDownload}
+              onClick={handleDownloadAndSend}
               className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 rounded-lg transition-colors"
             >
               ダウンロード
