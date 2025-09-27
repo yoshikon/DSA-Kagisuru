@@ -5,14 +5,15 @@ import { ServiceOverview } from '../components/dashboard/service-overview';
 import { FileLockPage } from '../components/dashboard/file-lock-page';
 import { FileUnlockPage } from '../components/dashboard/file-unlock-page';
 import { AddressBookPage } from '../components/dashboard/address-book-page';
+import { PasswordSettingsPage } from '../components/dashboard/password-settings-page';
 import { DatabaseService } from '../lib/database';
 import { FileStorage } from '../lib/storage';
-import { BarChart3, Shield, Users, HardDrive, Lock, Unlock, BookOpen, Grid3x3 as Grid3X3 } from 'lucide-react';
+import { BarChart3, Shield, Users, HardDrive, Lock, Unlock, BookOpen, Grid3x3 as Grid3X3, Key } from 'lucide-react';
 
 export function DashboardPage() {
   const [files, setFiles] = useState<any[]>([]);
   const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
-  const [currentView, setCurrentView] = useState<'overview' | 'files' | 'lock' | 'unlock' | 'addressbook'>('overview');
+  const [currentView, setCurrentView] = useState<'overview' | 'files' | 'lock' | 'unlock' | 'addressbook' | 'password'>('overview');
   const [stats, setStats] = useState({
     totalFiles: 0,
     totalRecipients: 0,
@@ -265,6 +266,18 @@ export function DashboardPage() {
                   <BookOpen className="h-5 w-5" />
                   <span>アドレス帳</span>
                 </button>
+                
+                <button
+                  onClick={() => setCurrentView('password')}
+                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
+                    currentView === 'password' 
+                      ? 'bg-blue-100 text-blue-900' 
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  <Key className="h-5 w-5" />
+                  <span>パスワード設定</span>
+                </button>
               </div>
             </nav>
           </div>
@@ -354,6 +367,7 @@ export function DashboardPage() {
             {currentView === 'lock' && <FileLockPage />}
             {currentView === 'unlock' && <FileUnlockPage />}
             {currentView === 'addressbook' && <AddressBookPage />}
+            {currentView === 'password' && <PasswordSettingsPage />}
           </div>
         </div>
       </main>

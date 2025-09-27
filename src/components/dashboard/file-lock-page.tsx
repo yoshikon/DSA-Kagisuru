@@ -27,7 +27,13 @@ export function FileLockPage() {
     try {
       // デモ用の簡単な暗号化処理
       const fileToLock = files[0];
-      const password = FileEncryption.generatePassword();
+      
+      // 設定されたパスワードを使用、なければ生成
+      let password = localStorage.getItem('kagisuru_decryption_password');
+      if (!password) {
+        password = FileEncryption.generatePassword();
+        localStorage.setItem('kagisuru_decryption_password', password);
+      }
       
       const encryptionResult = await FileEncryption.encryptFile(
         fileToLock,

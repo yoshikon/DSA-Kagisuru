@@ -41,11 +41,15 @@ export function FileUnlockPage() {
       // デモ用: 実際の暗号化データの場合は適切な復号処理を行う
       setUnlockProgress(40);
       
-      // パスワード入力を求める（実際の実装では受信者認証後に取得）
-      const password = prompt('解錠用パスワードを入力してください:');
+      // 設定されたパスワードを使用
+      let password = localStorage.getItem('kagisuru_decryption_password');
       if (!password) {
-        setIsUnlocking(false);
-        return;
+        // パスワードが設定されていない場合は入力を求める
+        password = prompt('解錠用パスワードを入力してください:');
+        if (!password) {
+          setIsUnlocking(false);
+          return;
+        }
       }
       
       setUnlockProgress(60);
