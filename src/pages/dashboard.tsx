@@ -1,13 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Header } from '../components/layout/header';
 import { FileList } from '../components/dashboard/file-list';
+import { ServiceOverview } from '../components/dashboard/service-overview';
+import { FileLockPage } from '../components/dashboard/file-lock-page';
+import { FileUnlockPage } from '../components/dashboard/file-unlock-page';
+import { AddressBookPage } from '../components/dashboard/address-book-page';
 import { DatabaseService } from '../lib/database';
 import { FileStorage } from '../lib/storage';
-import { BarChart3, Shield, Users, HardDrive } from 'lucide-react';
+import { BarChart3, Shield, Users, HardDrive, Lock, Unlock, BookOpen, Grid3X3 } from 'lucide-react';
 
 export function DashboardPage() {
   const [files, setFiles] = useState<any[]>([]);
   const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
+  const [currentView, setCurrentView] = useState<'overview' | 'files' | 'lock' | 'unlock' | 'addressbook'>('overview');
   const [stats, setStats] = useState({
     totalFiles: 0,
     totalRecipients: 0,
@@ -195,90 +200,160 @@ export function DashboardPage() {
       <Header currentPath="/dashboard" />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* ページヘッダー */}
-        <div className="mb-8">
-          <div className="flex items-center space-x-3 mb-4">
-            <BarChart3 className="h-8 w-8 text-blue-600" />
-            <h1 className="text-3xl font-bold text-gray-900">ダッシュボード</h1>
+        {/* サイドバーナビゲーション */}
+        <div className="flex gap-8">
+          <div className="w-64 flex-shrink-0">
+            <nav className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">メニュー</h2>
+              <div className="space-y-2">
+                <button
+                  onClick={() => setCurrentView('overview')}
+                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
+                    currentView === 'overview' 
+                      ? 'bg-blue-100 text-blue-900' 
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  <Grid3X3 className="h-5 w-5" />
+                  <span>サービス一覧</span>
+                </button>
+                
+                <button
+                  onClick={() => setCurrentView('files')}
+                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
+                    currentView === 'files' 
+                      ? 'bg-blue-100 text-blue-900' 
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  <BarChart3 className="h-5 w-5" />
+                  <span>ファイル履歴</span>
+                </button>
+                
+                <button
+                  onClick={() => setCurrentView('lock')}
+                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
+                    currentView === 'lock' 
+                      ? 'bg-blue-100 text-blue-900' 
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  <Lock className="h-5 w-5" />
+                  <span>ファイル施錠</span>
+                </button>
+                
+                <button
+                  onClick={() => setCurrentView('unlock')}
+                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
+                    currentView === 'unlock' 
+                      ? 'bg-blue-100 text-blue-900' 
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  <Unlock className="h-5 w-5" />
+                  <span>ファイル解錠</span>
+                </button>
+                
+                <button
+                  onClick={() => setCurrentView('addressbook')}
+                  className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
+                    currentView === 'addressbook' 
+                      ? 'bg-blue-100 text-blue-900' 
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                >
+                  <BookOpen className="h-5 w-5" />
+                  <span>アドレス帳</span>
+                </button>
+              </div>
+            </nav>
           </div>
-          <p className="text-lg text-gray-600">
-            送信したファイルの管理と統計情報
-          </p>
-        </div>
 
-        {/* 統計カード */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Shield className="h-6 w-6 text-blue-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">送信ファイル</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.totalFiles}</p>
-              </div>
-            </div>
+          {/* メインコンテンツ */}
+          <div className="flex-1">
+            {currentView === 'overview' && <ServiceOverview />}
+            {currentView === 'files' && (
+              <div>
+                <div className="mb-8">
+                  <div className="flex items-center space-x-3 mb-4">
+                    <BarChart3 className="h-8 w-8 text-blue-600" />
+                    <h1 className="text-3xl font-bold text-gray-900">ファイル履歴</h1>
+                  </div>
+                  <p className="text-lg text-gray-600">
+                    送信したファイルの管理と統計情報
+                  </p>
+                </div>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <Users className="h-6 w-6 text-green-600" />
+                {/* 統計カード */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                  <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <div className="flex items-center">
+                      <div className="p-2 bg-blue-100 rounded-lg">
+                        <Shield className="h-6 w-6 text-blue-600" />
+                      </div>
+                      <div className="ml-4">
+                        <p className="text-sm font-medium text-gray-600">送信ファイル</p>
+                        <p className="text-2xl font-bold text-gray-900">{stats.totalFiles}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <div className="flex items-center">
+                      <div className="p-2 bg-green-100 rounded-lg">
+                        <Users className="h-6 w-6 text-green-600" />
+                      </div>
+                      <div className="ml-4">
+                        <p className="text-sm font-medium text-gray-600">総受信者数</p>
+                        <p className="text-2xl font-bold text-gray-900">{stats.totalRecipients}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <div className="flex items-center">
+                      <div className="p-2 bg-orange-100 rounded-lg">
+                        <BarChart3 className="h-6 w-6 text-orange-600" />
+                      </div>
+                      <div className="ml-4">
+                        <p className="text-sm font-medium text-gray-600">総ダウンロード</p>
+                        <p className="text-2xl font-bold text-gray-900">{stats.totalDownloads}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <div className="flex items-center">
+                      <div className="p-2 bg-purple-100 rounded-lg">
+                        <HardDrive className="h-6 w-6 text-purple-600" />
+                      </div>
+                      <div className="ml-4">
+                        <p className="text-sm font-medium text-gray-600">使用容量</p>
+                        <p className="text-2xl font-bold text-gray-900">{formatFileSize(stats.storageUsed)}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ファイル一覧 */}
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+                  <FileList
+                    files={files}
+                    selectedFiles={selectedFiles}
+                    onFileSelect={handleFileSelect}
+                    onSelectAll={handleSelectAll}
+                    onDelete={handleDelete}
+                    onBulkDelete={handleBulkDelete}
+                    onViewDetails={handleViewDetails}
+                  />
+                </div>
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">総受信者数</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.totalRecipients}</p>
-              </div>
-            </div>
+            )}
+            {currentView === 'lock' && <FileLockPage />}
+            {currentView === 'unlock' && <FileUnlockPage />}
+            {currentView === 'addressbook' && <AddressBookPage />}
           </div>
-
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-orange-100 rounded-lg">
-                <BarChart3 className="h-6 w-6 text-orange-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">総ダウンロード</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.totalDownloads}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <HardDrive className="h-6 w-6 text-purple-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">使用容量</p>
-                <p className="text-2xl font-bold text-gray-900">{formatFileSize(stats.storageUsed)}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* ファイル一覧 */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-          <FileList
-            files={files}
-            selectedFiles={selectedFiles}
-            onFileSelect={handleFileSelect}
-            onSelectAll={handleSelectAll}
-            onDelete={handleDelete}
-            onBulkDelete={handleBulkDelete}
-            onViewDetails={handleViewDetails}
-          />
-        </div>
-
-        {/* 追加アクション */}
-        <div className="mt-8 text-center">
-          <button
-            onClick={() => window.location.href = '/encrypt'}
-            className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
-          >
-            <Shield className="h-5 w-5 mr-2" />
-            新しいファイルを暗号化
-          </button>
         </div>
       </main>
     </div>
