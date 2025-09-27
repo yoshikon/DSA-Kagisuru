@@ -234,7 +234,6 @@ export function DownloadModal({
                       保存完了: {saveLocation}
                     </p>
                   </div>
-                </p>
                 </div>
               )}
             </div>
