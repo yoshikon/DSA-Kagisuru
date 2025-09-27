@@ -48,14 +48,18 @@ export function DownloadModal({
   const handleFileSystemSave = async () => {
     if (!fileHandle) return;
     
+    // Check if fileData exists
+    if (!fileData) {
+      console.error('No file data available for saving');
+      onDownload(fileName, saveLocation);
+      onClose();
+      return;
+    }
+    
     try {
       const writable = await fileHandle.createWritable();
       
-      // 実際のファイルデータを書き込み
-      if (fileData) {
-        const blob = new Blob([fileData], { type: 'application/octet-stream' });
-        await writable.write(blob);
-      }
+      const blob = new Blob([fileData], { type: 'application/octet-stream' });
       await writable.write(blob);
       await writable.close();
       
