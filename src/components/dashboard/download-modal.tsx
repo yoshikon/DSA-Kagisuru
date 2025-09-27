@@ -45,39 +45,11 @@ export function DownloadModal({
   };
 
   const handleLocationSelect = () => {
-    // ファイル保存先選択ダイアログを開く
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.webkitdirectory = true;
-    input.setAttribute('webkitdirectory', '');
-    input.setAttribute('directory', '');
-    input.style.display = 'none';
+    // 保存先選択の説明を表示
+    setSaveLocation('ブラウザのデフォルト保存先');
     
-    // ダイアログのボタンテキストを「保存」に設定（可能な場合）
-    input.setAttribute('accept', '*/*');
-    input.setAttribute('title', '保存先フォルダを選択');
-    
-    input.onchange = (e) => {
-      const target = e.target as HTMLInputElement;
-      if (target.files && target.files.length > 0) {
-        const file = target.files[0];
-        const path = file.webkitRelativePath;
-        if (path) {
-          const folderName = path.split('/')[0];
-          setSaveLocation(folderName || '選択済み');
-        } else {
-          setSaveLocation('選択済み');
-        }
-      }
-      document.body.removeChild(input);
-    };
-    
-    input.oncancel = () => {
-      document.body.removeChild(input);
-    };
-    
-    document.body.appendChild(input);
-    input.click();
+    // 実際の保存はブラウザのダウンロード機能を使用
+    alert('ファイルはブラウザの設定に従ってダウンロードフォルダに保存されます。\n\n保存先を変更したい場合は、ブラウザの設定でダウンロード先を変更するか、ダウンロード後にファイルを移動してください。');
   };
 
   if (!isOpen) return null;
@@ -168,20 +140,20 @@ export function DownloadModal({
             </label>
             <div
               onClick={handleLocationSelect}
-              className="w-full flex items-center justify-center border-2 border-dashed border-gray-300 rounded-xl px-4 py-8 hover:border-gray-400 hover:bg-gray-50 transition-all duration-200 cursor-pointer"
+              className="w-full flex items-center justify-center border-2 border-dashed border-gray-300 rounded-xl px-4 py-6 hover:border-gray-400 hover:bg-gray-50 transition-all duration-200 cursor-pointer"
             >
               <div className="text-center">
                 <Folder className="mx-auto h-8 w-8 text-gray-400 mb-2" />
                 <p className="text-sm font-medium text-gray-900 mb-1">
-                  {saveLocation || '保存先をクリックして選択'}
+                  {saveLocation || 'クリックして保存先を確認'}
                 </p>
                 <p className="text-xs text-gray-500">
-                  ファイルの保存先フォルダを選択してください
+                  ブラウザのデフォルト保存先に保存されます
                 </p>
               </div>
             </div>
             <p className="mt-1 text-xs text-gray-500">
-              ※ブラウザの制限により、実際の保存先はブラウザの設定に従います
+              ※保存先を変更したい場合は、ブラウザの設定を変更してください
             </p>
           </div>
 
