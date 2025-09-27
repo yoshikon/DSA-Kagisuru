@@ -36,7 +36,7 @@ export function FileUnlockPage() {
     try {
       // ファイル読み込み
       setUnlockProgress(20);
-      const fileBuffer = await file.arrayBuffer();
+      const fileText = await file.text();
       
       // デモ用: 実際の暗号化データの場合は適切な復号処理を行う
       setUnlockProgress(40);
@@ -50,14 +50,15 @@ export function FileUnlockPage() {
       
       setUnlockProgress(60);
       
-      // 暗号化データの解析（簡素化版）
+      // 暗号化データの解析
       try {
-        // 実際の暗号化ファイルの場合の処理
-        const encryptedData = new Uint8Array(fileBuffer);
+        // JSONデータをパース
+        const fileData = JSON.parse(fileText);
         
-        // デモ用の固定値（実際は暗号化ファイルから抽出）
-        const salt = new Uint8Array(16);
-        const iv = new Uint8Array(12);
+        // 配列データをUint8Arrayに変換
+        const encryptedData = new Uint8Array(fileData.encryptedData);
+        const salt = new Uint8Array(fileData.salt);
+        const iv = new Uint8Array(fileData.iv);
         
         setUnlockProgress(80);
         
@@ -72,18 +73,10 @@ export function FileUnlockPage() {
           }
         );
         
-        // 元のファイル名を復元
-        let originalName = file.name;
-        if (originalName.includes('【施錠済み】')) {
-          originalName = originalName.replace('【施錠済み】', '').replace('.kgsr', '');
-        } else if (originalName.endsWith('.kgsr')) {
-          originalName = originalName.replace('.kgsr', '');
-        }
-        
         setUnlockedFile({
-          name: originalName,
+          name: fileData.originalName,
           data: decryptedData,
-          type: 'application/octet-stream' // 実際はMIMEタイプを復元
+          type: fileData.mimeType
         });
         
         setUnlockProgress(100);

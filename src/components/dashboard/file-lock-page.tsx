@@ -29,15 +29,28 @@ export function FileLockPage() {
       const fileToLock = files[0];
       const password = FileEncryption.generatePassword();
       
-      const encryptedFile = await FileEncryption.encryptFile(
+      const encryptionResult = await FileEncryption.encryptFile(
         fileToLock,
         password
       );
       
+      // 暗号化データとメタデータをJSON形式で保存
+      const fileData = {
+        encryptedData: Array.from(encryptionResult.encryptedData),
+        salt: Array.from(encryptionResult.salt),
+        iv: Array.from(encryptionResult.iv),
+        originalName: fileToLock.name,
+        mimeType: fileToLock.type,
+        size: fileToLock.size
+      };
+      
+      const jsonData = JSON.stringify(fileData);
+      const encodedData = new TextEncoder().encode(jsonData);
+      
       // 施錠済みファイル情報を保存
       setLockedFile({
         originalFile: fileToLock,
-        encryptedData: encryptedFile.encryptedData,
+        encryptedData: encodedData,
         fileName: `【施錠済み】${fileToLock.name}.kgsr`
       });
       
