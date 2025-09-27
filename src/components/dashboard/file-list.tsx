@@ -59,17 +59,19 @@ export function FileList({
 
   if (files.length === 0) {
     return (
-      <div className="text-center py-12">
-        <FileIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">
+      <div className="text-center py-16">
+        <div className="w-16 h-16 bg-gradient-to-br from-slate-600 to-slate-700 rounded-2xl flex items-center justify-center mx-auto mb-6">
+          <FileIcon className="h-8 w-8 text-white" />
+        </div>
+        <h3 className="text-2xl font-bold text-white mb-4">
           まだファイルがありません
         </h3>
-        <p className="text-gray-500 mb-6">
+        <p className="text-slate-400 text-lg mb-8">
           最初のファイルを暗号化して共有しましょう
         </p>
         <button
           onClick={() => window.location.href = '/encrypt'}
-          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-lg hover:shadow-blue-500/25 hover:transform hover:scale-105 font-medium"
         >
           ファイルを暗号化
         </button>
@@ -80,16 +82,16 @@ export function FileList({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-gray-900">送信済みファイル ({files.length}件)</h2>
+        <h2 className="text-2xl font-bold text-white">送信済みファイル ({files.length}件)</h2>
         
         {someSelected && (
           <div className="flex items-center space-x-3">
-            <span className="text-sm text-gray-600">
+            <span className="text-sm text-slate-400">
               {selectedFiles.length}件選択中
             </span>
             <button
               onClick={() => onBulkDelete(selectedFiles)}
-              className="inline-flex items-center px-3 py-1.5 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors space-x-1"
+              className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white text-sm font-medium rounded-xl hover:from-red-700 hover:to-red-800 transition-all duration-300 shadow-lg hover:shadow-red-500/25 hover:transform hover:scale-105 space-x-2"
             >
               <Trash2 className="h-4 w-4" />
               <span>選択したファイルを削除</span>
@@ -99,15 +101,15 @@ export function FileList({
       </div>
 
       {files.length > 1 && (
-        <div className="flex items-center space-x-2 pb-2 border-b border-gray-200">
+        <div className="flex items-center space-x-2 pb-4 border-b border-slate-600">
           <label className="flex items-center space-x-2 cursor-pointer">
             <input
               type="checkbox"
               checked={allSelected}
               onChange={(e) => onSelectAll(e.target.checked)}
-              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              className="rounded border-slate-500 bg-slate-700 text-blue-600 focus:ring-blue-500"
             />
-            <span className="text-sm text-gray-700">すべて選択</span>
+            <span className="text-sm text-slate-300">すべて選択</span>
           </label>
         </div>
       )}
@@ -121,10 +123,10 @@ export function FileList({
           return (
             <div
               key={file.id}
-              className={`bg-gradient-to-r from-white to-gray-50 border rounded-2xl p-6 hover:shadow-2xl transition-all duration-300 hover:transform hover:scale-[1.02] ${
+              className={`bg-gradient-to-r from-slate-800 to-slate-700 border rounded-2xl p-6 hover:shadow-2xl transition-all duration-300 hover:transform hover:scale-[1.02] ${
                 selectedFiles.includes(file.id) 
-                  ? 'border-blue-500 bg-gradient-to-r from-blue-50 to-blue-100 shadow-lg shadow-blue-500/25' 
-                  : 'border-gray-200 hover:border-gray-300'
+                  ? 'border-blue-500 bg-gradient-to-r from-blue-900/50 to-blue-800/50 shadow-lg shadow-blue-500/25' 
+                  : 'border-slate-600 hover:border-slate-500'
               }`}
             >
               <div className="flex items-center justify-between">
@@ -134,19 +136,19 @@ export function FileList({
                       type="checkbox"
                       checked={selectedFiles.includes(file.id)}
                       onChange={(e) => onFileSelect(file.id, e.target.checked)}
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      className="rounded border-slate-500 bg-slate-700 text-blue-600 focus:ring-blue-500"
                     />
                   </label>
                   
                   <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg">
-                    <FileIcon className="h-6 w-6 text-blue-600" />
+                    <FileIcon className="h-6 w-6 text-white" />
                   </div>
                   
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-medium text-gray-900 truncate">
+                    <h3 className="font-medium text-white truncate text-lg">
                       {file.originalName}
                     </h3>
-                    <div className="flex items-center space-x-4 mt-2 text-sm text-gray-600">
+                    <div className="flex items-center space-x-4 mt-2 text-sm text-slate-400">
                       <span>{formatFileSize(file.size)}</span>
                       <span>受信者: {file.recipients.length}名</span>
                       <span className="flex items-center">
@@ -164,12 +166,14 @@ export function FileList({
                       <span className={`font-medium ${
                         isExpired ? 'text-red-600' : 
                         isExpiring ? 'text-orange-600' : 'text-gray-600'
+                        isExpired ? 'text-red-400' : 
+                        isExpiring ? 'text-orange-400' : 'text-slate-400'
                       }`}>
                         {isExpired ? '期限切れ' : 
                          daysLeft === 1 ? '残り1日' : `残り${daysLeft}日`}
                       </span>
                     </div>
-                    <div className="text-xs text-gray-600 mt-1">
+                    <div className="text-xs text-slate-500 mt-1">
                       {formatDate(file.createdAt)}作成
                     </div>
                   </div>
@@ -177,7 +181,7 @@ export function FileList({
                   <div className="flex items-center space-x-2">
                     <button
                       onClick={() => onViewDetails(file.id)}
-                      className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200 hover:transform hover:scale-110"
+                      className="p-2 text-slate-400 hover:text-blue-400 hover:bg-slate-600 rounded-xl transition-all duration-200 hover:transform hover:scale-110"
                       title="詳細を表示"
                     >
                       <Eye className="h-4 w-4" />
@@ -185,7 +189,7 @@ export function FileList({
                     
                     <button
                       onClick={() => onDelete(file.id)}
-                      className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200 hover:transform hover:scale-110"
+                      className="p-2 text-red-400 hover:text-red-300 hover:bg-slate-600 rounded-xl transition-all duration-200 hover:transform hover:scale-110"
                       title="削除"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -195,12 +199,12 @@ export function FileList({
               </div>
 
               {/* 受信者一覧 */}
-              <div className="mt-4 pt-4 border-t border-gray-200">
+              <div className="mt-4 pt-4 border-t border-slate-600">
                 <div className="flex flex-wrap gap-2 ml-12">
                   {file.recipients.map((email, index) => (
                     <span
                       key={index}
-                      className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 border border-blue-300"
+                      className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r from-blue-600/20 to-blue-500/20 text-blue-300 border border-blue-500/30"
                     >
                       {email}
                     </span>

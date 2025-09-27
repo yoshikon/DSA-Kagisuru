@@ -305,78 +305,78 @@ export function DashboardPage() {
             )}
             {currentView === 'files' && (
               <div>
-                <div className="mb-8">
-                  <div className="flex items-center space-x-4 mb-6">
-                    <BarChart3 className="h-8 w-8 text-blue-600" />
-                    <h1 className="text-3xl font-bold text-gray-900">ファイル履歴</h1>
+                {/* ダークテーマのファイル履歴ページ */}
+                <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white p-8 rounded-3xl">
+                  <div className="text-center mb-12">
+                    <h1 className="text-4xl font-bold text-white mb-4">ファイル履歴</h1>
+                    <p className="text-xl text-slate-300">
+                      送信したファイルの管理と統計情報
+                    </p>
                   </div>
-                  <p className="text-lg text-gray-600">
-                    送信したファイルの管理と統計情報
-                  </p>
-                </div>
 
-                {/* 統計カード */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                  <div className="bg-gradient-to-br from-white to-blue-50 rounded-2xl shadow-xl border border-blue-100 p-6 hover:shadow-2xl transition-all duration-300 hover:transform hover:scale-105">
-                    <div className="flex items-center">
-                      <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg">
-                        <Shield className="h-6 w-6 text-blue-600" />
+                  {/* 統計カード - ダークテーマ */}
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+                    <div className="bg-gradient-to-br from-slate-800 to-slate-700 rounded-2xl p-6 border border-slate-600 hover:border-blue-500 transition-all duration-300 hover:transform hover:scale-105">
+                      <div className="flex items-center">
+                        <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl">
+                          <Shield className="h-6 w-6 text-white" />
+                        </div>
+                        <div className="ml-4">
+                          <p className="text-sm font-medium text-slate-400">送信ファイル</p>
+                          <p className="text-3xl font-bold text-white">{stats.totalFiles}</p>
+                        </div>
                       </div>
-                      <div className="ml-4">
-                        <p className="text-sm font-semibold text-blue-600">送信ファイル</p>
-                        <p className="text-3xl font-bold text-blue-900">{stats.totalFiles}</p>
+                    </div>
+
+                    <div className="bg-gradient-to-br from-slate-800 to-slate-700 rounded-2xl p-6 border border-slate-600 hover:border-green-500 transition-all duration-300 hover:transform hover:scale-105">
+                      <div className="flex items-center">
+                        <div className="p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-xl">
+                          <Users className="h-6 w-6 text-white" />
+                        </div>
+                        <div className="ml-4">
+                          <p className="text-sm font-medium text-slate-400">総受信者数</p>
+                          <p className="text-3xl font-bold text-white">{stats.totalRecipients}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-gradient-to-br from-slate-800 to-slate-700 rounded-2xl p-6 border border-slate-600 hover:border-orange-500 transition-all duration-300 hover:transform hover:scale-105">
+                      <div className="flex items-center">
+                        <div className="p-3 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl">
+                          <BarChart3 className="h-6 w-6 text-white" />
+                        </div>
+                        <div className="ml-4">
+                          <p className="text-sm font-medium text-slate-400">総ダウンロード</p>
+                          <p className="text-3xl font-bold text-white">{stats.totalDownloads}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-gradient-to-br from-slate-800 to-slate-700 rounded-2xl p-6 border border-slate-600 hover:border-purple-500 transition-all duration-300 hover:transform hover:scale-105">
+                      <div className="flex items-center">
+                        <div className="p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl">
+                          <HardDrive className="h-6 w-6 text-white" />
+                        </div>
+                        <div className="ml-4">
+                          <p className="text-sm font-medium text-slate-400">使用容量</p>
+                          <p className="text-3xl font-bold text-white">{formatFileSize(stats.storageUsed)}</p>
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-gradient-to-br from-white to-green-50 rounded-2xl shadow-xl border border-green-100 p-6 hover:shadow-2xl transition-all duration-300 hover:transform hover:scale-105">
-                    <div className="flex items-center">
-                      <div className="p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg">
-                        <Users className="h-6 w-6 text-green-600" />
-                      </div>
-                      <div className="ml-4">
-                        <p className="text-sm font-semibold text-green-600">総受信者数</p>
-                        <p className="text-3xl font-bold text-green-900">{stats.totalRecipients}</p>
-                      </div>
-                    </div>
+                  {/* ファイル一覧 - ダークテーマ */}
+                  <div className="bg-gradient-to-br from-slate-800 to-slate-700 rounded-2xl border border-slate-600 p-8">
+                    <FileList
+                      files={files}
+                      selectedFiles={selectedFiles}
+                      onFileSelect={handleFileSelect}
+                      onSelectAll={handleSelectAll}
+                      onDelete={handleDelete}
+                      onBulkDelete={handleBulkDelete}
+                      onViewDetails={handleViewDetails}
+                    />
                   </div>
-
-                  <div className="bg-gradient-to-br from-white to-orange-50 rounded-2xl shadow-xl border border-orange-100 p-6 hover:shadow-2xl transition-all duration-300 hover:transform hover:scale-105">
-                    <div className="flex items-center">
-                      <div className="p-3 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-lg">
-                        <BarChart3 className="h-6 w-6 text-orange-600" />
-                      </div>
-                      <div className="ml-4">
-                        <p className="text-sm font-semibold text-orange-600">総ダウンロード</p>
-                        <p className="text-3xl font-bold text-orange-900">{stats.totalDownloads}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-gradient-to-br from-white to-purple-50 rounded-2xl shadow-xl border border-purple-100 p-6 hover:shadow-2xl transition-all duration-300 hover:transform hover:scale-105">
-                    <div className="flex items-center">
-                      <div className="p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg">
-                        <HardDrive className="h-6 w-6 text-purple-600" />
-                      </div>
-                      <div className="ml-4">
-                        <p className="text-sm font-semibold text-purple-600">使用容量</p>
-                        <p className="text-3xl font-bold text-purple-900">{formatFileSize(stats.storageUsed)}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* ファイル一覧 */}
-                <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 p-8 backdrop-blur-sm">
-                  <FileList
-                    files={files}
-                    selectedFiles={selectedFiles}
-                    onFileSelect={handleFileSelect}
-                    onSelectAll={handleSelectAll}
-                    onDelete={handleDelete}
-                    onBulkDelete={handleBulkDelete}
-                    onViewDetails={handleViewDetails}
-                  />
                 </div>
               </div>
             )}
