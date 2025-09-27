@@ -26,6 +26,13 @@ export function EncryptPage() {
     data: Uint8Array;
     originalName: string;
     size: number;
+    metadata?: {
+      salt: Uint8Array;
+      iv: Uint8Array;
+      originalName: string;
+      mimeType: string;
+      originalSize: number;
+    };
   } | null>(null);
   const [progress, setProgress] = useState<EncryptionProgress>({
     step: 'preparing',
@@ -84,24 +91,21 @@ export function EncryptPage() {
         message: '暗号化が完了しました！'
       });
 
-      // 暗号化データとメタデータをJSON形式で保存
-      const fileData = {
-        encryptedData: Array.from(encryptedFile.encryptedData),
-        salt: Array.from(encryptedFile.salt),
-        iv: Array.from(encryptedFile.iv),
-        originalName: fileToEncrypt.name,
-        mimeType: fileToEncrypt.type,
-        size: fileToEncrypt.size
-      };
-      
-      const jsonData = JSON.stringify(fileData);
-      const encodedData = new TextEncoder().encode(jsonData);
+      // 暗号化データを直接保存（バイナリ形式）
+      const encryptedData = encryptedFile.encryptedData;
       
       // 暗号化ファイル情報を保存
       setEncryptedFileData({
-        data: encodedData,
+        data: encryptedData,
         originalName: fileToEncrypt.name,
-        size: encodedData.length
+        size: encryptedData.length,
+        metadata: {
+          salt: encryptedFile.salt,
+          iv: encryptedFile.iv,
+          originalName: fileToEncrypt.name,
+          mimeType: fileToEncrypt.type,
+          originalSize: fileToEncrypt.size
+        }
       });
 
       setIsEncrypting(false);
@@ -125,13 +129,40 @@ export function EncryptPage() {
     if (!encryptedFileData) return;
 
     try {
+      // カスタムファイル形式で保存（メタデータ + 暗号化データ）
+      const metadata = encryptedFileData.metadata;
+      if (!metadata) {
+        throw new Error('メタデータが見つかりません');
+      }
+
+      // カスタムファイル形式: JSON header + binary data
+      const header = {
+        version: '1.0',
+        salt: Array.from(metadata.salt),
+        iv: Array.from(metadata.iv),
+        originalName: metadata.originalName,
+        mimeType: metadata.mimeType,
+        originalSize: metadata.originalSize,
+        encryptedSize: encryptedFileData.data.length
+      };
+      
+      const headerJson = JSON.stringify(header);
+      const headerBytes = new TextEncoder().encode(headerJson);
+      const headerLength = new Uint32Array([headerBytes.length]);
+      
+      // ファイル構造: [4 bytes header length][header JSON][encrypted data]
+      const finalData = new Uint8Array(4 + headerBytes.length + encryptedFileData.data.length);
+      finalData.set(new Uint8Array(headerLength.buffer), 0);
+      finalData.set(headerBytes, 4);
+      finalData.set(encryptedFileData.data, 4 + headerBytes.length);
+
       // File System Access APIが利用可能かチェック
       if ('showSaveFilePicker' in window && saveLocation && saveLocation !== fileName) {
         // File System Access APIを使用した保存は既にモーダル内で完了
         console.log('File saved via File System Access API:', saveLocation);
       } else {
         // フォールバック: 通常のダウンロード（編集されたファイル名を使用）
-        const blob = new Blob([encryptedFileData.data], { type: 'application/octet-stream' });
+        const blob = new Blob([finalData], { type: 'application/octet-stream' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -152,15 +183,14 @@ export function EncryptPage() {
         message: 'セキュアストレージにアップロード中...'
       });
 
-      // 元の暗号化データを復元
-      const fileData = JSON.parse(new TextDecoder().decode(encryptedFileData.data));
+      // 暗号化データを使用
       const encryptedFile = {
-        encryptedData: new Uint8Array(fileData.encryptedData),
-        salt: new Uint8Array(fileData.salt),
-        iv: new Uint8Array(fileData.iv),
-        originalName: fileData.originalName,
-        mimeType: fileData.mimeType,
-        size: fileData.size
+        encryptedData: encryptedFileData.data,
+        salt: metadata.salt,
+        iv: metadata.iv,
+        originalName: metadata.originalName,
+        mimeType: metadata.mimeType,
+        size: metadata.originalSize
       };
 
       // ファイル保存（メール送信も含む）

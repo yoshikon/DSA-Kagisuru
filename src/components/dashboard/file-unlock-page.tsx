@@ -40,16 +40,46 @@ export function FileUnlockPage() {
     try {
       // ファイル読み込み
       setUnlockProgress(20);
-      let fileData;
+      let parsedData;
       
       try {
-        const fileText = await file.text();
-        fileData = JSON.parse(fileText);
-        setFileMetadata(fileData);
-      } catch (parseError) {
-        // JSONパースに失敗した場合、バイナリファイルとして処理
         const arrayBuffer = await file.arrayBuffer();
-        setError('このファイル形式はサポートされていません。.kgsrファイルまたはJSON形式の暗号化ファイルを選択してください。');
+        const fileBytes = new Uint8Array(arrayBuffer);
+        
+        // カスタムファイル形式の解析
+        if (fileBytes.length < 4) {
+          throw new Error('ファイルが小さすぎます');
+        }
+        
+        // ヘッダー長を読み取り
+        const headerLength = new Uint32Array(fileBytes.slice(0, 4).buffer)[0];
+        
+        if (fileBytes.length < 4 + headerLength) {
+          throw new Error('ファイル形式が正しくありません');
+        }
+        
+        // ヘッダーJSONを読み取り
+        const headerBytes = fileBytes.slice(4, 4 + headerLength);
+        const headerJson = new TextDecoder().decode(headerBytes);
+        const header = JSON.parse(headerJson);
+        
+        // 暗号化データを読み取り
+        const encryptedData = fileBytes.slice(4 + headerLength);
+        
+        parsedData = {
+          version: header.version,
+          salt: header.salt,
+          iv: header.iv,
+          originalName: header.originalName,
+          mimeType: header.mimeType,
+          originalSize: header.originalSize,
+          encryptedData: Array.from(encryptedData)
+        };
+        
+        setFileMetadata(parsedData);
+      } catch (parseError) {
+        console.error('File parse error:', parseError);
+        setError('このファイル形式はサポートされていません。正しい.kgsrファイルを選択してください。');
         setIsUnlocking(false);
         return;
       }
@@ -65,7 +95,7 @@ export function FileUnlockPage() {
         return;
       }
       
-      await performDecryption(fileData, password);
+      await performDecryption(parsedData, password);
       
     } catch (error) {
       console.error('Unlock error:', error);
