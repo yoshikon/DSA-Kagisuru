@@ -45,24 +45,28 @@ export function DownloadModal({
   };
 
   const handleLocationSelect = () => {
-    // ファイル保存ダイアログを模擬（ブラウザの制限により実際のフォルダ選択は不可）
-    // 隠しinput要素を作成してクリック
+    // ファイル保存先選択ダイアログを開く
     const input = document.createElement('input');
     input.type = 'file';
-    input.webkitdirectory = true; // フォルダ選択を有効化（一部ブラウザ対応）
+    input.webkitdirectory = true;
+    input.setAttribute('webkitdirectory', '');
+    input.setAttribute('directory', '');
     input.style.display = 'none';
+    
+    // ダイアログのボタンテキストを「保存」に設定（可能な場合）
+    input.setAttribute('accept', '*/*');
+    input.setAttribute('title', '保存先フォルダを選択');
     
     input.onchange = (e) => {
       const target = e.target as HTMLInputElement;
       if (target.files && target.files.length > 0) {
-        // 選択されたフォルダのパスを取得（可能な場合）
         const file = target.files[0];
         const path = file.webkitRelativePath;
         if (path) {
           const folderName = path.split('/')[0];
-          setSaveLocation(folderName || 'ダウンロード');
+          setSaveLocation(folderName || '選択済み');
         } else {
-          setSaveLocation('ダウンロード');
+          setSaveLocation('選択済み');
         }
       }
       document.body.removeChild(input);
@@ -169,15 +173,15 @@ export function DownloadModal({
               <div className="text-center">
                 <Folder className="mx-auto h-8 w-8 text-gray-400 mb-2" />
                 <p className="text-sm font-medium text-gray-900 mb-1">
-                  {saveLocation || 'フォルダをクリックして選択'}
+                  {saveLocation || '保存先をクリックして選択'}
                 </p>
                 <p className="text-xs text-gray-500">
-                  保存先フォルダを指定してください
+                  ファイルの保存先フォルダを選択してください
                 </p>
               </div>
             </div>
             <p className="mt-1 text-xs text-gray-500">
-              ブラウザの制限により、実際の保存先はブラウザの設定に従います
+              ※ブラウザの制限により、実際の保存先はブラウザの設定に従います
             </p>
           </div>
 
