@@ -316,50 +316,50 @@ export function DashboardPage() {
 
                   {/* 統計カード - ダークテーマ */}
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
-                    <div className="bg-gradient-to-br from-slate-800 to-slate-700 rounded-2xl p-6 border border-slate-600 hover:border-blue-500 transition-all duration-300 hover:transform hover:scale-105">
-                      <div className="flex items-center">
-                        <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl">
+                    <div className="bg-gradient-to-br from-slate-800 to-slate-700 rounded-2xl p-6 border border-slate-600 hover:border-blue-500 transition-all duration-300 hover:transform hover:scale-105 min-h-[120px]">
+                      <div className="flex items-center justify-between h-full">
+                        <div className="flex-shrink-0 p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg">
                           <Shield className="h-6 w-6 text-white" />
                         </div>
-                        <div className="ml-4">
-                          <p className="text-sm font-medium text-slate-400">送信ファイル</p>
-                          <p className="text-3xl font-bold text-white">{stats.totalFiles}</p>
+                        <div className="flex-1 ml-4 text-right">
+                          <p className="text-sm font-medium text-slate-400 mb-1">送信ファイル</p>
+                          <p className="text-4xl font-bold text-white leading-none">{stats.totalFiles}</p>
                         </div>
                       </div>
                     </div>
 
-                    <div className="bg-gradient-to-br from-slate-800 to-slate-700 rounded-2xl p-6 border border-slate-600 hover:border-green-500 transition-all duration-300 hover:transform hover:scale-105">
-                      <div className="flex items-center">
-                        <div className="p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-xl">
+                    <div className="bg-gradient-to-br from-slate-800 to-slate-700 rounded-2xl p-6 border border-slate-600 hover:border-green-500 transition-all duration-300 hover:transform hover:scale-105 min-h-[120px]">
+                      <div className="flex items-center justify-between h-full">
+                        <div className="flex-shrink-0 p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg">
                           <Users className="h-6 w-6 text-white" />
                         </div>
-                        <div className="ml-4">
-                          <p className="text-sm font-medium text-slate-400">総受信者数</p>
-                          <p className="text-3xl font-bold text-white">{stats.totalRecipients}</p>
+                        <div className="flex-1 ml-4 text-right">
+                          <p className="text-sm font-medium text-slate-400 mb-1">総受信者数</p>
+                          <p className="text-4xl font-bold text-white leading-none">{stats.totalRecipients}</p>
                         </div>
                       </div>
                     </div>
 
-                    <div className="bg-gradient-to-br from-slate-800 to-slate-700 rounded-2xl p-6 border border-slate-600 hover:border-orange-500 transition-all duration-300 hover:transform hover:scale-105">
-                      <div className="flex items-center">
-                        <div className="p-3 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl">
+                    <div className="bg-gradient-to-br from-slate-800 to-slate-700 rounded-2xl p-6 border border-slate-600 hover:border-orange-500 transition-all duration-300 hover:transform hover:scale-105 min-h-[120px]">
+                      <div className="flex items-center justify-between h-full">
+                        <div className="flex-shrink-0 p-3 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-lg">
                           <BarChart3 className="h-6 w-6 text-white" />
                         </div>
-                        <div className="ml-4">
-                          <p className="text-sm font-medium text-slate-400">総ダウンロード</p>
-                          <p className="text-3xl font-bold text-white">{stats.totalDownloads}</p>
+                        <div className="flex-1 ml-4 text-right">
+                          <p className="text-sm font-medium text-slate-400 mb-1">総ダウンロード</p>
+                          <p className="text-4xl font-bold text-white leading-none">{stats.totalDownloads}</p>
                         </div>
                       </div>
                     </div>
 
-                    <div className="bg-gradient-to-br from-slate-800 to-slate-700 rounded-2xl p-6 border border-slate-600 hover:border-purple-500 transition-all duration-300 hover:transform hover:scale-105">
-                      <div className="flex items-center">
-                        <div className="p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl">
+                    <div className="bg-gradient-to-br from-slate-800 to-slate-700 rounded-2xl p-6 border border-slate-600 hover:border-purple-500 transition-all duration-300 hover:transform hover:scale-105 min-h-[120px]">
+                      <div className="flex items-center justify-between h-full">
+                        <div className="flex-shrink-0 p-3 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg">
                           <HardDrive className="h-6 w-6 text-white" />
                         </div>
-                        <div className="ml-4">
-                          <p className="text-sm font-medium text-slate-400">使用容量</p>
-                          <p className="text-3xl font-bold text-white">{formatFileSize(stats.storageUsed)}</p>
+                        <div className="flex-1 ml-4 text-right">
+                          <p className="text-sm font-medium text-slate-400 mb-1">使用容量</p>
+                          <p className="text-2xl font-bold text-white leading-none">{formatFileSize(stats.storageUsed)}</p>
                         </div>
                       </div>
                     </div>
