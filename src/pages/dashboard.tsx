@@ -271,7 +271,9 @@ export function DashboardPage() {
 
           {/* メインコンテンツ */}
           <div className="flex-1">
-            {currentView === 'overview' && <ServiceOverview />}
+            {currentView === 'overview' && (
+              <ServiceOverview onNavigate={(page) => setCurrentView(page as any)} />
+            )}
             {currentView === 'files' && (
               <div>
                 <div className="mb-8">

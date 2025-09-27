@@ -1,7 +1,11 @@
 import React from 'react';
 import { Lock, Unlock, BookOpen, Download, Shield, ArrowRight } from 'lucide-react';
 
-export function ServiceOverview() {
+interface ServiceOverviewProps {
+  onNavigate?: (page: string) => void;
+}
+
+export function ServiceOverview({ onNavigate }: ServiceOverviewProps) {
   const services = [
     {
       id: 'lock',
@@ -44,13 +48,22 @@ export function ServiceOverview() {
   const handleServiceClick = (serviceId: string) => {
     switch (serviceId) {
       case 'lock':
-        window.location.href = '/encrypt';
+        // 親コンポーネントに施錠ページへの遷移を通知
+        if (onNavigate) {
+          onNavigate('lock');
+        }
         break;
       case 'unlock':
-        // ファイル解錠ページに移動
+        // 親コンポーネントに解錠ページへの遷移を通知
+        if (onNavigate) {
+          onNavigate('unlock');
+        }
         break;
       case 'addressbook':
-        // アドレス帳ページに移動
+        // 親コンポーネントにアドレス帳ページへの遷移を通知
+        if (onNavigate) {
+          onNavigate('addressbook');
+        }
         break;
       case 'passwordless':
         // パスワードレス受信設定ページに移動
