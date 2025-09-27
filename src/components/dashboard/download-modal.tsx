@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Download, X, FolderOpen, Edit3, Check, Folder, Save } from 'lucide-react';
+import { Download, X, FolderOpen, CreditCard as Edit3, Check, Folder, Save } from 'lucide-react';
 
 interface DownloadModalProps {
   isOpen: boolean;
