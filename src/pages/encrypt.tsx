@@ -125,16 +125,22 @@ export function EncryptPage() {
     if (!encryptedFileData) return;
 
     try {
-      // ファイルダウンロード
-      const blob = new Blob([encryptedFileData.data], { type: 'application/octet-stream' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      // File System Access APIが利用可能かチェック
+      if ('showSaveFilePicker' in window && saveLocation && saveLocation !== fileName) {
+        // File System Access APIを使用した保存は既にモーダル内で完了
+        console.log('File saved via File System Access API:', saveLocation);
+      } else {
+        // フォールバック: 通常のダウンロード（編集されたファイル名を使用）
+        const blob = new Blob([encryptedFileData.data], { type: 'application/octet-stream' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName; // 編集されたファイル名を使用
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
 
       // ダウンロード後、実際の送信処理を開始
       setShowDownloadModal(false);
@@ -375,6 +381,7 @@ export function EncryptPage() {
         onDownload={handleDownloadComplete}
         originalFileName={encryptedFileData?.originalName || ''}
         fileSize={encryptedFileData?.size || 0}
+        fileData={encryptedFileData?.data}
       />
     </div>
   );

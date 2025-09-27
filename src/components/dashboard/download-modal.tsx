@@ -7,6 +7,7 @@ interface DownloadModalProps {
   onDownload: (fileName: string, saveLocation?: string) => void;
   originalFileName: string;
   fileSize?: number;
+  fileData?: Uint8Array;
 }
 
 export function DownloadModal({ 
@@ -14,10 +15,12 @@ export function DownloadModal({
   onClose, 
   onDownload, 
   originalFileName,
-  fileSize = 0
+  fileSize = 0,
+  fileData
 }: DownloadModalProps) {
   const [fileName, setFileName] = useState('');
   const [saveLocation, setSaveLocation] = useState('');
+  const [fileHandle, setFileHandle] = useState<any>(null);
   const [isEditingName, setIsEditingName] = useState(false);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
 
@@ -33,7 +36,36 @@ export function DownloadModal({
   }, [isOpen, originalFileName]);
 
   const handleDownload = () => {
-    onDownload(fileName, saveLocation);
+    if (fileHandle) {
+      // File System Access APIを使用してファイルを保存
+      handleFileSystemSave();
+    } else {
+      // フォールバック: 通常のダウンロード
+      onDownload(fileName, saveLocation);
+    }
+  };
+
+  const handleFileSystemSave = async () => {
+    if (!fileHandle) return;
+    
+    try {
+      const writable = await fileHandle.createWritable();
+      
+      // 実際のファイルデータを書き込み
+      if (fileData) {
+        const blob = new Blob([fileData], { type: 'application/octet-stream' });
+        await writable.write(blob);
+      }
+      await writable.write(blob);
+      await writable.close();
+      
+      // 成功時の処理
+      onDownload(fileName, fileHandle.name);
+    } catch (error) {
+      console.error('File save error:', error);
+      // エラー時はフォールバック
+      onDownload(fileName, saveLocation);
+    }
     onClose();
   };
 
@@ -48,8 +80,9 @@ export function DownloadModal({
             description: 'Encrypted files',
             accept: { 'application/octet-stream': ['.kgsr'] }
           }]
-        }).then((fileHandle: any) => {
-          setSaveLocation(fileHandle.name);
+        }).then((handle: any) => {
+          setFileHandle(handle);
+          setSaveLocation(handle.name);
           setShowSaveDialog(false);
         }).catch((err: any) => {
           if (err.name !== 'AbortError') {
