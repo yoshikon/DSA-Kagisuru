@@ -164,8 +164,6 @@ export function FileList({
                     <div className="flex items-center text-sm font-medium">
                       <Clock className="h-3 w-3 mr-1" />
                       <span className={`font-medium ${
-                        isExpired ? 'text-red-600' : 
-                        isExpiring ? 'text-orange-600' : 'text-gray-600'
                         isExpired ? 'text-red-400' : 
                         isExpiring ? 'text-orange-400' : 'text-slate-400'
                       }`}>
