@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Unlock, Upload, Download, CheckCircle, AlertCircle } from 'lucide-react';
+import { Unlock, Upload, Download, CheckCircle, AlertCircle, Key, Eye, EyeOff } from 'lucide-react';
 import { FileUploadZone } from '../ui/file-upload-zone';
 import { FileEncryption } from '../../lib/crypto';
 import { ProgressBar } from '../ui/progress-bar';
@@ -14,6 +14,10 @@ export function FileUnlockPage() {
     type: string;
   } | null>(null);
   const [error, setError] = useState<string>('');
+  const [showPasswordInput, setShowPasswordInput] = useState(false);
+  const [manualPassword, setManualPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [fileMetadata, setFileMetadata] = useState<any>(null);
 
   const handleUnlock = async () => {
     if (files.length === 0) {
@@ -24,7 +28,7 @@ export function FileUnlockPage() {
     const file = files[0];
     
     // 暗号化ファイルかチェック（.kgsr拡張子または暗号化データ）
-    if (!file.name.endsWith('.kgsr') && !file.name.includes('施錠済み')) {
+    if (!file.name.endsWith('.kgsr') && !file.name.includes('施錠済み') && !file.name.includes('encrypted')) {
       setError('暗号化されたファイルを選択してください（.kgsrファイルまたは施錠済みファイル）');
       return;
     }
@@ -36,59 +40,32 @@ export function FileUnlockPage() {
     try {
       // ファイル読み込み
       setUnlockProgress(20);
-      const fileText = await file.text();
+      let fileData;
       
-      // デモ用: 実際の暗号化データの場合は適切な復号処理を行う
+      try {
+        const fileText = await file.text();
+        fileData = JSON.parse(fileText);
+        setFileMetadata(fileData);
+      } catch (parseError) {
+        // JSONパースに失敗した場合、バイナリファイルとして処理
+        const arrayBuffer = await file.arrayBuffer();
+        setError('このファイル形式はサポートされていません。.kgsrファイルまたはJSON形式の暗号化ファイルを選択してください。');
+        setIsUnlocking(false);
+        return;
+      }
+      
       setUnlockProgress(40);
       
-      // 設定されたパスワードを使用
+      // パスワード取得
       let password = localStorage.getItem('kagisuru_decryption_password');
       if (!password) {
-        // パスワードが設定されていない場合は入力を求める
-        password = prompt('解錠用パスワードを入力してください:');
-        if (!password) {
-          setIsUnlocking(false);
-          return;
-        }
+        // パスワードが設定されていない場合は手動入力を促す
+        setShowPasswordInput(true);
+        setIsUnlocking(false);
+        return;
       }
       
-      setUnlockProgress(60);
-      
-      // 暗号化データの解析
-      try {
-        // JSONデータをパース
-        const fileData = JSON.parse(fileText);
-        
-        // 配列データをUint8Arrayに変換
-        const encryptedData = new Uint8Array(fileData.encryptedData);
-        const salt = new Uint8Array(fileData.salt);
-        const iv = new Uint8Array(fileData.iv);
-        
-        setUnlockProgress(80);
-        
-        // 復号処理
-        const decryptedData = await FileEncryption.decryptFile(
-          encryptedData,
-          password,
-          salt,
-          iv,
-          (progress) => {
-            setUnlockProgress(80 + (progress * 0.2));
-          }
-        );
-        
-        setUnlockedFile({
-          name: fileData.originalName,
-          data: decryptedData,
-          type: fileData.mimeType
-        });
-        
-        setUnlockProgress(100);
-        
-      } catch (decryptError) {
-        console.error('Decryption error:', decryptError);
-        setError('パスワードが正しくないか、ファイルが破損している可能性があります');
-      }
+      await performDecryption(fileData, password);
       
     } catch (error) {
       console.error('Unlock error:', error);
@@ -96,6 +73,63 @@ export function FileUnlockPage() {
     } finally {
       setIsUnlocking(false);
     }
+  };
+
+  const performDecryption = async (fileData: any, password: string) => {
+    try {
+      setUnlockProgress(60);
+      
+      // 配列データをUint8Arrayに変換
+      const encryptedData = new Uint8Array(fileData.encryptedData);
+      const salt = new Uint8Array(fileData.salt);
+      const iv = new Uint8Array(fileData.iv);
+      
+      setUnlockProgress(80);
+      
+      // 復号処理
+      const decryptedData = await FileEncryption.decryptFile(
+        encryptedData,
+        password,
+        salt,
+        iv,
+        (progress) => {
+          setUnlockProgress(80 + (progress * 0.2));
+        }
+      );
+      
+      setUnlockedFile({
+        name: fileData.originalName,
+        data: decryptedData,
+        type: fileData.mimeType
+      });
+      
+      setUnlockProgress(100);
+      setShowPasswordInput(false);
+      
+    } catch (decryptError) {
+      console.error('Decryption error:', decryptError);
+      setError('パスワードが正しくないか、ファイルが破損している可能性があります。正しいパスワードを入力してください。');
+      setShowPasswordInput(true);
+    }
+  };
+
+  const handleManualUnlock = async () => {
+    if (!manualPassword.trim()) {
+      setError('パスワードを入力してください');
+      return;
+    }
+    
+    if (!fileMetadata) {
+      setError('ファイルデータが見つかりません。ファイルを再選択してください。');
+      return;
+    }
+    
+    setIsUnlocking(true);
+    setError('');
+    setUnlockProgress(0);
+    
+    await performDecryption(fileMetadata, manualPassword);
+    setIsUnlocking(false);
   };
 
   const handleDownloadUnlocked = () => {
@@ -115,8 +149,11 @@ export function FileUnlockPage() {
   const handleReset = () => {
     setFiles([]);
     setUnlockedFile(null);
+    setFileMetadata(null);
     setError('');
     setUnlockProgress(0);
+    setShowPasswordInput(false);
+    setManualPassword('');
   };
 
   return (
@@ -136,7 +173,7 @@ export function FileUnlockPage() {
         </p>
       </div>
 
-      {!unlockedFile ? (
+      {!unlockedFile && !showPasswordInput ? (
         <div className="bg-gradient-to-br from-white to-gray-50 rounded-3xl shadow-2xl border border-gray-100 p-10 space-y-10 backdrop-blur-sm">
           {/* ファイルアップロード */}
           <div>
@@ -197,7 +234,118 @@ export function FileUnlockPage() {
             </p>
           </div>
         </div>
-      ) : (
+      ) : showPasswordInput ? (
+        /* パスワード入力画面 */
+        <div className="bg-gradient-to-br from-white to-gray-50 rounded-3xl shadow-2xl border border-gray-100 p-10 space-y-8 backdrop-blur-sm">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-2xl">
+              <Key className="h-8 w-8 text-white" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              解錠用パスワードを入力
+            </h2>
+            <p className="text-gray-600">
+              このファイルを解錠するためのパスワードを入力してください
+            </p>
+          </div>
+
+          {/* ファイル情報表示 */}
+          {fileMetadata && (
+            <div className="bg-gradient-to-r from-gray-100 to-gray-50 rounded-2xl p-6 shadow-inner">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 bg-gradient-to-br from-gray-600 to-gray-700 rounded-xl shadow-lg">
+                  <Download className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <p className="font-medium text-gray-900">{fileMetadata.originalName}</p>
+                  <p className="text-sm text-gray-500">
+                    {Math.round(fileMetadata.size / 1024)} KB
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* パスワード入力 */}
+          <div>
+            <label className="block text-lg font-bold text-gray-700 mb-3">
+              解錠用パスワード
+            </label>
+            <div className="relative">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={manualPassword}
+                onChange={(e) => {
+                  setManualPassword(e.target.value);
+                  if (error) setError('');
+                }}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    handleManualUnlock();
+                  }
+                }}
+                placeholder="パスワードを入力してください"
+                className="w-full px-4 py-4 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-green-500/20 focus:border-green-500 pr-12 text-lg shadow-lg hover:shadow-xl transition-all duration-300"
+                disabled={isUnlocking}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 p-2 hover:bg-gray-100 rounded-xl transition-colors"
+                disabled={isUnlocking}
+              >
+                {showPassword ? <EyeOff className="h-5 w-5 text-gray-500" /> : <Eye className="h-5 w-5 text-gray-500" />}
+              </button>
+            </div>
+          </div>
+
+          {/* エラー表示 */}
+          {error && (
+            <div className="bg-gradient-to-r from-red-50 to-red-100 border-2 border-red-200 rounded-2xl p-6 shadow-xl">
+              <div className="flex items-start space-x-3">
+                <AlertCircle className="h-6 w-6 text-red-600 mt-1" />
+                <p className="text-lg text-red-800 font-medium">{error}</p>
+              </div>
+            </div>
+          )}
+
+          {/* 解錠進行状況 */}
+          {isUnlocking && (
+            <div className="space-y-6">
+              <h4 className="font-bold text-gray-900 text-xl">解錠中...</h4>
+              <ProgressBar
+                progress={unlockProgress}
+                label="ファイル解錠"
+                color="green"
+                size="lg"
+              />
+            </div>
+          )}
+
+          {/* 解錠ボタン */}
+          <div className="flex justify-center">
+            <button
+              onClick={handleManualUnlock}
+              disabled={!manualPassword.trim() || isUnlocking}
+              className="inline-flex items-center px-10 py-4 bg-gradient-to-r from-green-600 to-green-700 text-white font-bold rounded-2xl hover:from-green-700 hover:to-green-800 focus:ring-4 focus:ring-green-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-2xl hover:shadow-green-500/25 hover:transform hover:scale-105 space-x-3 text-lg"
+            >
+              <Unlock className="h-6 w-6" />
+              <span>{isUnlocking ? '解錠中...' : '解錠する'}</span>
+            </button>
+          </div>
+
+          {/* 戻るボタン */}
+          <div className="text-center">
+            <button
+              onClick={handleReset}
+              className="text-gray-600 hover:text-gray-800 text-lg font-medium transition-colors hover:underline"
+              disabled={isUnlocking}
+            >
+              別のファイルを選択する
+            </button>
+          </div>
+        </div>
+      ) : unlockedFile ? (
         /* 解錠完了画面 */
         <div className="bg-gradient-to-br from-white to-gray-50 rounded-3xl shadow-2xl border border-gray-100 p-10 backdrop-blur-sm">
           <div className="text-center space-y-8">
@@ -252,6 +400,7 @@ export function FileUnlockPage() {
             </div>
           </div>
         </div>
+      ) : null}
       )}
     </div>
   );
