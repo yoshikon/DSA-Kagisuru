@@ -114,41 +114,43 @@ export function FileLockPage() {
   return (
     <div className="space-y-8">
       {/* ヘッダー */}
-      <div>
-        <div className="flex items-center space-x-3 mb-4">
-          <div className="p-2 bg-blue-100 rounded-lg">
-            <Lock className="h-6 w-6 text-blue-600" />
+      <div className="text-center">
+        <div className="flex items-center justify-center space-x-4 mb-6">
+          <div className="p-4 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-2xl">
+            <Lock className="h-8 w-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">ファイル施錠</h1>
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
+            ファイル施錠
+          </h1>
         </div>
-        <p className="text-lg text-gray-600">
+        <p className="text-xl text-gray-600 max-w-2xl mx-auto">
           指定する受取人だけが開けるように、ファイルを施錠できます。
         </p>
       </div>
 
       {!lockedFile ? (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 space-y-8">
+        <div className="bg-gradient-to-br from-white to-gray-50 rounded-3xl shadow-2xl border border-gray-100 p-10 space-y-10 backdrop-blur-sm">
           {/* 送信者設定 */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-lg font-semibold text-gray-800 mb-4">
               差出人
             </label>
             <div className="relative">
               <select
                 value={sender}
                 onChange={(e) => setSender(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white pr-10"
+                className="w-full px-4 py-4 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 appearance-none bg-white pr-12 text-lg font-medium shadow-lg hover:shadow-xl transition-all duration-300"
                 disabled={isLocking}
               >
                 <option value="今野">今野</option>
               </select>
-              <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+              <ChevronDown className="absolute right-4 top-1/2 transform -translate-y-1/2 h-6 w-6 text-gray-400 pointer-events-none" />
             </div>
           </div>
 
           {/* 受信者設定 */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-lg font-semibold text-gray-800 mb-4">
               受取人
             </label>
             <div className="relative">
@@ -157,24 +159,24 @@ export function FileLockPage() {
                 value={recipient}
                 onChange={(e) => setRecipient(e.target.value)}
                 placeholder="履歴から検索、または新しい受取人のメールアドレスを入力"
-                className="w-full px-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-12 py-4 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 text-lg shadow-lg hover:shadow-xl transition-all duration-300"
                 disabled={isLocking}
               />
-              <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-                <User className="h-4 w-4 text-gray-400" />
+              <div className="absolute left-4 top-1/2 transform -translate-y-1/2">
+                <User className="h-6 w-6 text-gray-400" />
               </div>
             </div>
             
             {/* 候補表示エリア */}
-            <div className="mt-2 p-4 bg-gray-800 text-white rounded-lg">
-              <p className="text-sm text-gray-300 mb-2">
+            <div className="mt-4 p-6 bg-gradient-to-r from-slate-800 to-slate-700 text-white rounded-2xl shadow-xl">
+              <p className="text-sm text-slate-300 mb-3">
                 以下の候補にない新しいメールアドレスも、上のフォームに入力すれば指定できます。
               </p>
-              <div className="flex items-center space-x-2 text-sm">
+              <div className="flex items-center space-x-3 text-sm">
                 <span>今野</span>
-                <span className="text-gray-400">konno.29@gmail.com</span>
-                <button className="text-blue-400 hover:text-blue-300">
-                  <User className="h-4 w-4" />
+                <span className="text-slate-400">konno.29@gmail.com</span>
+                <button className="text-blue-400 hover:text-blue-300 p-1 rounded-lg hover:bg-slate-600 transition-colors">
+                  <User className="h-5 w-5" />
                 </button>
               </div>
             </div>
@@ -195,57 +197,57 @@ export function FileLockPage() {
             <button
               onClick={handleLock}
               disabled={!recipient || files.length === 0 || isLocking}
-              className="inline-flex items-center px-8 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors space-x-2"
+              className="inline-flex items-center px-10 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold rounded-2xl hover:from-blue-700 hover:to-blue-800 focus:ring-4 focus:ring-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-2xl hover:shadow-blue-500/25 hover:transform hover:scale-105 space-x-3 text-lg"
             >
-              <Lock className="h-5 w-5" />
+              <Lock className="h-6 w-6" />
               <span>{isLocking ? '施錠中...' : '施錠する'}</span>
             </button>
           </div>
         </div>
       ) : (
         /* 施錠完了画面 */
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-          <div className="text-center space-y-6">
+        <div className="bg-gradient-to-br from-white to-gray-50 rounded-3xl shadow-2xl border border-gray-100 p-10 backdrop-blur-sm">
+          <div className="text-center space-y-8">
             {/* 受信者表示 */}
-            <div className="flex items-center justify-center space-x-2 mb-6">
-              <div className="bg-gray-700 text-white px-3 py-1 rounded-full text-sm flex items-center space-x-2">
+            <div className="flex items-center justify-center space-x-3 mb-8">
+              <div className="bg-gradient-to-r from-slate-700 to-slate-600 text-white px-6 py-3 rounded-2xl text-lg flex items-center space-x-3 shadow-xl">
                 <span>{sender}</span>
-                <User className="h-3 w-3" />
+                <User className="h-5 w-5" />
                 <button 
                   onClick={handleReset}
-                  className="hover:bg-gray-600 rounded-full p-1"
+                  className="hover:bg-slate-600 rounded-xl p-2 transition-colors"
                 >
-                  <X className="h-3 w-3" />
+                  <X className="h-4 w-4" />
                 </button>
               </div>
             </div>
 
-            <div className="mb-6">
+            <div className="mb-8">
               <input
                 type="email"
                 value={recipient}
                 readOnly
-                className="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg text-center"
+                className="w-full px-6 py-4 bg-gradient-to-r from-gray-100 to-gray-50 border-2 border-gray-200 rounded-2xl text-center text-lg font-medium shadow-lg"
               />
             </div>
 
             {/* 施錠済みファイル表示 */}
-            <div className="bg-gray-100 rounded-lg p-8 mb-6">
-              <div className="flex flex-col items-center space-y-4">
+            <div className="bg-gradient-to-br from-gray-100 to-gray-50 rounded-3xl p-10 mb-8 shadow-inner">
+              <div className="flex flex-col items-center space-y-6">
                 <button 
                   onClick={handleReset}
-                  className="absolute top-4 right-4 p-2 hover:bg-gray-200 rounded-full"
+                  className="absolute top-6 right-6 p-3 hover:bg-gray-200 rounded-2xl transition-colors"
                 >
-                  <X className="h-5 w-5 text-gray-500" />
+                  <X className="h-6 w-6 text-gray-500" />
                 </button>
                 
-                <div className="w-16 h-16 bg-gray-600 rounded-lg flex items-center justify-center">
-                  <Lock className="h-8 w-8 text-white" />
+                <div className="w-20 h-20 bg-gradient-to-br from-gray-600 to-gray-700 rounded-2xl flex items-center justify-center shadow-2xl">
+                  <Lock className="h-10 w-10 text-white" />
                 </div>
                 
                 <div className="text-center">
-                  <p className="text-sm text-gray-600 mb-1">施錠済み</p>
-                  <p className="font-medium text-gray-900">{lockedFile.fileName}</p>
+                  <p className="text-lg text-gray-600 mb-2 font-medium">施錠済み</p>
+                  <p className="font-bold text-gray-900 text-xl">{lockedFile.fileName}</p>
                 </div>
               </div>
             </div>
@@ -253,12 +255,12 @@ export function FileLockPage() {
             {/* ダウンロードボタン */}
             <button
               onClick={handleDownloadAndSend}
-              className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 rounded-lg transition-colors"
+              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-4 rounded-2xl transition-all duration-300 shadow-2xl hover:shadow-blue-500/25 hover:transform hover:scale-105 text-lg"
             >
               ダウンロード
             </button>
 
-            <div className="text-xs text-gray-500 mt-4">
+            <div className="text-sm text-gray-500 mt-6 space-y-1">
               <p>リスク回避のため、施錠済みファイルをダウンロードして保管することをお勧めします。</p>
               <p>このファイルは指定された受取人のみが解錠できます。</p>
             </div>
@@ -267,15 +269,19 @@ export function FileLockPage() {
       )}
 
       {/* 履歴セクション */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-        <div className="flex items-center space-x-3 mb-6">
-          <Clock className="h-6 w-6 text-gray-600" />
-          <h2 className="text-xl font-semibold text-gray-900">履歴</h2>
+      <div className="bg-gradient-to-br from-white to-gray-50 rounded-3xl shadow-2xl border border-gray-100 p-10 backdrop-blur-sm">
+        <div className="flex items-center space-x-4 mb-8">
+          <div className="p-3 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl shadow-xl">
+            <Clock className="h-7 w-7 text-white" />
+          </div>
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-orange-800 bg-clip-text text-transparent">履歴</h2>
         </div>
         
-        <div className="text-center py-12">
-          <Clock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-500">
+        <div className="text-center py-16">
+          <div className="w-16 h-16 bg-gradient-to-br from-gray-300 to-gray-400 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl">
+            <Clock className="h-8 w-8 text-white" />
+          </div>
+          <p className="text-gray-500 text-lg">
             {lockedFile ? '施錠が完了しました' : 'まだ履歴がありません'}
           </p>
         </div>

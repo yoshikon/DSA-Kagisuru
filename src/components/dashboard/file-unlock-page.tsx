@@ -122,23 +122,25 @@ export function FileUnlockPage() {
   return (
     <div className="space-y-8">
       {/* ヘッダー */}
-      <div>
-        <div className="flex items-center space-x-3 mb-4">
-          <div className="p-2 bg-green-100 rounded-lg">
-            <Unlock className="h-6 w-6 text-green-600" />
+      <div className="text-center">
+        <div className="flex items-center justify-center space-x-4 mb-6">
+          <div className="p-4 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl shadow-2xl">
+            <Unlock className="h-8 w-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">ファイル解錠</h1>
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-green-600 to-green-800 bg-clip-text text-transparent">
+            ファイル解錠
+          </h1>
         </div>
-        <p className="text-lg text-gray-600">
+        <p className="text-xl text-gray-600 max-w-2xl mx-auto">
           施錠済みファイルを解錠できます。あなたが受取人に指定された施錠済みファイルを持っている場合のみ、ファイルを解錠できます。
         </p>
       </div>
 
       {!unlockedFile ? (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 space-y-8">
+        <div className="bg-gradient-to-br from-white to-gray-50 rounded-3xl shadow-2xl border border-gray-100 p-10 space-y-10 backdrop-blur-sm">
           {/* ファイルアップロード */}
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            <h3 className="text-2xl font-bold text-gray-900 mb-6">
               暗号化ファイルを選択
             </h3>
             <FileUploadZone
@@ -148,15 +150,15 @@ export function FileUnlockPage() {
               accept=".kgsr,.encrypted,.lock"
               disabled={isUnlocking}
             />
-            <p className="mt-2 text-sm text-gray-500">
+            <p className="mt-4 text-lg text-gray-500">
               .kgsrファイルまたは施錠済みファイルを選択してください
             </p>
           </div>
 
           {/* 解錠進行状況 */}
           {isUnlocking && (
-            <div className="space-y-4">
-              <h4 className="font-medium text-gray-900">解錠中...</h4>
+            <div className="space-y-6">
+              <h4 className="font-bold text-gray-900 text-xl">解錠中...</h4>
               <ProgressBar
                 progress={unlockProgress}
                 label="ファイル解錠"
@@ -168,10 +170,10 @@ export function FileUnlockPage() {
 
           {/* エラー表示 */}
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <div className="flex items-start space-x-2">
-                <AlertCircle className="h-5 w-5 text-red-600 mt-0.5" />
-                <p className="text-sm text-red-800">{error}</p>
+            <div className="bg-gradient-to-r from-red-50 to-red-100 border-2 border-red-200 rounded-2xl p-6 shadow-xl">
+              <div className="flex items-start space-x-3">
+                <AlertCircle className="h-6 w-6 text-red-600 mt-1" />
+                <p className="text-lg text-red-800 font-medium">{error}</p>
               </div>
             </div>
           )}
@@ -181,47 +183,49 @@ export function FileUnlockPage() {
             <button
               onClick={handleUnlock}
               disabled={files.length === 0 || isUnlocking}
-              className="inline-flex items-center px-8 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors space-x-2"
+              className="inline-flex items-center px-10 py-4 bg-gradient-to-r from-green-600 to-green-700 text-white font-bold rounded-2xl hover:from-green-700 hover:to-green-800 focus:ring-4 focus:ring-green-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-2xl hover:shadow-green-500/25 hover:transform hover:scale-105 space-x-3 text-lg"
             >
-              <Unlock className="h-5 w-5" />
+              <Unlock className="h-6 w-6" />
               <span>{isUnlocking ? '解錠中...' : '解錠する'}</span>
             </button>
           </div>
 
           {/* 説明 */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <p className="text-sm text-blue-800">
+          <div className="bg-gradient-to-r from-blue-50 to-blue-100 border-2 border-blue-200 rounded-2xl p-6 shadow-xl">
+            <p className="text-lg text-blue-800">
               暗号化されたファイル（.kgsrファイル）を選択してください。相手から解錠用リンクを受け取っている場合は、そちらを優先して使用してください。
             </p>
           </div>
         </div>
       ) : (
         /* 解錠完了画面 */
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-          <div className="text-center space-y-6">
+        <div className="bg-gradient-to-br from-white to-gray-50 rounded-3xl shadow-2xl border border-gray-100 p-10 backdrop-blur-sm">
+          <div className="text-center space-y-8">
             {/* 成功アイコン */}
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
-              <CheckCircle className="h-10 w-10 text-green-600" />
+            <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-green-600 rounded-3xl flex items-center justify-center mx-auto shadow-2xl">
+              <CheckCircle className="h-12 w-12 text-white" />
             </div>
             
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              <h2 className="text-3xl font-bold bg-gradient-to-r from-green-600 to-green-800 bg-clip-text text-transparent mb-4">
                 解錠完了！
               </h2>
-              <p className="text-gray-600">
+              <p className="text-xl text-gray-600">
                 ファイルが正常に解錠されました
               </p>
             </div>
 
             {/* 解錠済みファイル表示 */}
-            <div className="bg-gray-100 rounded-lg p-6">
-              <div className="flex items-center justify-center space-x-3">
-                <Download className="h-8 w-8 text-gray-600" />
+            <div className="bg-gradient-to-br from-gray-100 to-gray-50 rounded-3xl p-8 shadow-inner">
+              <div className="flex items-center justify-center space-x-4">
+                <div className="p-3 bg-gradient-to-br from-gray-600 to-gray-700 rounded-2xl shadow-xl">
+                  <Download className="h-8 w-8 text-white" />
+                </div>
                 <div>
-                  <p className="font-medium text-gray-900">
+                  <p className="font-bold text-gray-900 text-xl">
                     {unlockedFile.name}
                   </p>
-                  <p className="text-sm text-gray-500">解錠済み</p>
+                  <p className="text-lg text-gray-500 font-medium">解錠済み</p>
                 </div>
               </div>
             </div>
@@ -229,20 +233,20 @@ export function FileUnlockPage() {
             {/* ダウンロードボタン */}
             <button
               onClick={handleDownloadUnlocked}
-              className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 rounded-lg transition-colors flex items-center justify-center space-x-2"
+              className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold py-4 rounded-2xl transition-all duration-300 shadow-2xl hover:shadow-green-500/25 hover:transform hover:scale-105 flex items-center justify-center space-x-3 text-lg"
             >
-              <Download className="h-5 w-5" />
+              <Download className="h-6 w-6" />
               <span>解錠済みファイルをダウンロード</span>
             </button>
             {/* 新しいファイルを解錠 */}
             <button
               onClick={handleReset}
-              className="text-gray-600 hover:text-gray-800 text-sm transition-colors"
+              className="text-gray-600 hover:text-gray-800 text-lg font-medium transition-colors hover:underline"
             >
               別のファイルを解錠する
             </button>
 
-            <div className="text-xs text-gray-500 mt-4">
+            <div className="text-sm text-gray-500 mt-6 space-y-1">
               <p>解錠されたファイルは元の形式で復元されました。</p>
               <p>セキュリティのため、不要になったら削除することをお勧めします。</p>
             </div>
