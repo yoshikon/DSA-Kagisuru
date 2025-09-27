@@ -2,6 +2,19 @@ import { supabase, isSupabaseAvailable } from './supabase';
 import type { EncryptedFile, FileRecipient } from '../types';
 
 export class DatabaseService {
+  // Helper function to convert Uint8Array to Base64 in chunks to avoid call stack overflow
+  private static uint8ArrayToBase64(uint8Array: Uint8Array): string {
+    const chunkSize = 8192; // Process in 8KB chunks
+    let result = '';
+    
+    for (let i = 0; i < uint8Array.length; i += chunkSize) {
+      const chunk = uint8Array.slice(i, i + chunkSize);
+      result += String.fromCharCode(...chunk);
+    }
+    
+    return btoa(result);
+  }
+
   // 暗号化ファイルをデータベースに保存
   static async saveEncryptedFile(fileData: {
     encryptedData: Uint8Array;
@@ -18,9 +31,9 @@ export class DatabaseService {
 
     try {
       // ArrayBufferをBase64に変換
-      const encryptedBase64 = btoa(String.fromCharCode(...fileData.encryptedData));
-      const saltBase64 = btoa(String.fromCharCode(...fileData.salt));
-      const ivBase64 = btoa(String.fromCharCode(...fileData.iv));
+      const encryptedBase64 = this.uint8ArrayToBase64(fileData.encryptedData);
+      const saltBase64 = this.uint8ArrayToBase64(fileData.salt);
+      const ivBase64 = this.uint8ArrayToBase64(fileData.iv);
 
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + expiryDays);
