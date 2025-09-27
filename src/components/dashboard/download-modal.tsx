@@ -22,7 +22,7 @@ export function DownloadModal({
   const [saveLocation, setSaveLocation] = useState('');
   const [fileHandle, setFileHandle] = useState<any>(null);
   const [isEditingName, setIsEditingName] = useState(false);
-  const [showSaveDialog, setShowSaveDialog] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -35,14 +35,18 @@ export function DownloadModal({
     }
   }, [isOpen, originalFileName]);
 
-  const handleDownload = () => {
+  const handleSave = async () => {
+    setIsSaving(true);
+    
     if (fileHandle) {
       // File System Access APIを使用してファイルを保存
-      handleFileSystemSave();
+      await handleFileSystemSave();
     } else {
-      // フォールバック: 通常のダウンロード
-      onDownload(fileName, saveLocation);
+      // 保存先が選択されていない場合はSave Asダイアログを表示
+      await handleSaveAsDialog();
     }
+    
+    setIsSaving(false);
   };
 
   const handleFileSystemSave = async () => {
@@ -64,52 +68,48 @@ export function DownloadModal({
       await writable.close();
       
       // 成功時の処理
-      onDownload(fileName, fileHandle.name);
+      onDownload(fileName, fileHandle.name || saveLocation);
+      onClose();
     } catch (error) {
       console.error('File save error:', error);
       // エラー時はフォールバック
-      onDownload(fileName, saveLocation);
+      handleFallbackDownload();
     }
+  };
+
+  const handleFallbackDownload = () => {
+    // フォールバック: 通常のダウンロード
+    onDownload(fileName, saveLocation || 'ダウンロード');
     onClose();
   };
 
-  const handleSaveAsDialog = () => {
+  const handleSaveAsDialog = async () => {
     // ブラウザのFile System Access APIを使用（対応ブラウザのみ）
     if ('showSaveFilePicker' in window) {
       try {
         // @ts-ignore - File System Access API
-        window.showSaveFilePicker({
+        const handle = await window.showSaveFilePicker({
           suggestedName: fileName,
           types: [{
             description: 'Encrypted files',
             accept: { 'application/octet-stream': ['.kgsr'] }
           }]
-        }).then((handle: any) => {
-          setFileHandle(handle);
-          setSaveLocation(handle.name);
-          setShowSaveDialog(false);
-        }).catch((err: any) => {
-          if (err.name !== 'AbortError') {
-            console.error('Save dialog error:', err);
-          }
         });
+        
+        setFileHandle(handle);
+        setSaveLocation(handle.name);
+        
+        // 即座にファイルを保存
+        await handleFileSystemSave();
       } catch (error) {
-        console.error('File System Access API error:', error);
-        fallbackSaveDialog();
+        if (error.name !== 'AbortError') {
+          console.error('Save dialog error:', error);
+          handleFallbackDownload();
+        }
       }
     } else {
-      fallbackSaveDialog();
+      handleFallbackDownload();
     }
-  };
-
-  const fallbackSaveDialog = () => {
-    // フォールバック: カスタム保存ダイアログを表示
-    setShowSaveDialog(true);
-  };
-
-  const handleCustomSaveLocation = (location: string) => {
-    setSaveLocation(location);
-    setShowSaveDialog(false);
   };
 
   const formatFileSize = (bytes: number): string => {
@@ -204,32 +204,40 @@ export function DownloadModal({
           {/* 保存先選択 */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              保存先
+              保存先を選択してファイルを保存
             </label>
-            <button
-              onClick={handleSaveAsDialog}
-              className="w-full flex items-center justify-center border-2 border-dashed border-blue-300 rounded-xl px-4 py-6 hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 cursor-pointer bg-gradient-to-r from-blue-50 to-blue-100"
-            >
-              <div className="text-center">
-                <div className="flex items-center justify-center mb-2">
-                  <Save className="h-8 w-8 text-blue-600 mr-2" />
-                  <FolderOpen className="h-8 w-8 text-blue-600" />
+            <div className="space-y-4">
+              <button
+                onClick={handleSave}
+                disabled={!fileName.trim() || isSaving}
+                className="w-full flex items-center justify-center border-2 border-dashed border-blue-300 rounded-xl px-4 py-6 hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 cursor-pointer bg-gradient-to-r from-blue-50 to-blue-100 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <div className="text-center">
+                  <div className="flex items-center justify-center mb-2">
+                    <Save className="h-8 w-8 text-blue-600 mr-2" />
+                    <FolderOpen className="h-8 w-8 text-blue-600" />
+                  </div>
+                  <p className="text-sm font-medium text-blue-900 mb-1">
+                    {isSaving ? '保存中...' : (saveLocation || 'Save As... で保存先を選択して保存')}
+                  </p>
+                  <p className="text-xs text-blue-700">
+                    {isSaving ? 'ファイルを保存しています' : 'クリックして保存ダイアログを開く'}
+                  </p>
                 </div>
-                <p className="text-sm font-medium text-blue-900 mb-1">
-                  {saveLocation || 'Save As... で保存先を選択'}
+              </button>
+              
+              {saveLocation && !isSaving && (
+                <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <Check className="h-4 w-4 text-green-600" />
+                    <p className="text-sm text-green-800 font-medium">
+                      保存完了: {saveLocation}
+                    </p>
+                  </div>
                 </p>
-                <p className="text-xs text-blue-700">
-                  クリックして保存ダイアログを開く
-                </p>
-              </div>
-            </button>
-            {saveLocation && (
-              <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-lg">
-                <p className="text-xs text-green-800">
-                  保存先: {saveLocation}
-                </p>
-              </div>
-            )}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* 注意事項 */}
@@ -254,92 +262,17 @@ export function DownloadModal({
         <div className="flex items-center justify-between p-6 border-t border-gray-200 bg-gray-50 rounded-b-2xl">
           <button
             onClick={onClose}
+            disabled={isSaving}
             className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium transition-colors"
           >
-            キャンセル
+            {isSaving ? '保存中...' : 'キャンセル'}
           </button>
-          <button
-            onClick={handleDownload}
-            disabled={!fileName.trim()}
-            className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-medium rounded-xl hover:from-blue-700 hover:to-blue-800 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-lg hover:shadow-blue-500/25 hover:transform hover:scale-105 space-x-2"
-          >
-            <Download className="h-4 w-4" />
-            <span>ダウンロード</span>
-          </button>
-        </div>
-      </div>
-
-      {/* カスタム保存ダイアログ（フォールバック用） */}
-      {showSaveDialog && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-[60]">
-          <div className="bg-white rounded-2xl max-w-lg w-full mx-4 shadow-2xl">
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <div className="flex items-center space-x-3">
-                <Save className="h-6 w-6 text-blue-600" />
-                <h3 className="text-lg font-bold text-gray-900">Save As</h3>
-              </div>
-              <button
-                onClick={() => setShowSaveDialog(false)}
-                className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
-              >
-                <X className="h-5 w-5 text-gray-500" />
-              </button>
-            </div>
-            
-            <div className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  ファイル名
-                </label>
-                <input
-                  type="text"
-                  value={fileName}
-                  onChange={(e) => setFileName(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  保存場所を選択
-                </label>
-                <div className="grid grid-cols-2 gap-2">
-                  {[
-                    'デスクトップ',
-                    'ダウンロード',
-                    'ドキュメント',
-                    'スクリーンショット'
-                  ].map((location) => (
-                    <button
-                      key={location}
-                      onClick={() => handleCustomSaveLocation(location)}
-                      className="flex items-center space-x-2 p-3 border border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-all duration-200"
-                    >
-                      <Folder className="h-5 w-5 text-blue-600" />
-                      <span className="text-sm font-medium text-gray-900">{location}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-            
-            <div className="flex items-center justify-between p-6 border-t border-gray-200 bg-gray-50 rounded-b-2xl">
-              <button
-                onClick={() => setShowSaveDialog(false)}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => handleCustomSaveLocation(saveLocation || 'ダウンロード')}
-                className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Save
-              </button>
-            </div>
+          
+          <div className="text-sm text-gray-500">
+            {saveLocation ? '保存が完了しました' : 'ファイル名を編集して保存先を選択してください'}
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
