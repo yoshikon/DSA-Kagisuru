@@ -3,6 +3,7 @@ import { Lock, User, Upload, Clock, ChevronDown, Download, X } from 'lucide-reac
 import { FileUploadZone } from '../ui/file-upload-zone';
 import { FileEncryption } from '../../lib/crypto';
 import { SendFilePage } from './send-file-page';
+import { DownloadModal } from './download-modal';
 
 export function FileLockPage() {
   const [sender, setSender] = useState('今野');
@@ -15,6 +16,7 @@ export function FileLockPage() {
     fileName: string;
   } | null>(null);
   const [showSendPage, setShowSendPage] = useState(false);
+  const [showDownloadModal, setShowDownloadModal] = useState(false);
 
   const handleLock = async () => {
     if (!recipient || files.length === 0) {
@@ -69,29 +71,37 @@ export function FileLockPage() {
     }
   };
 
-  const handleDownload = () => {
+  const handleDownload = (customFileName?: string) => {
     if (!lockedFile) return;
+    
+    const downloadFileName = customFileName || lockedFile.fileName;
     
     // 暗号化ファイルをダウンロード
     const blob = new Blob([lockedFile.encryptedData], { type: 'application/octet-stream' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = lockedFile.fileName;
+    a.download = downloadFileName;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
 
-  const handleDownloadAndSend = () => {
-    // まずファイルをダウンロード
-    handleDownload();
+  const handleDownloadClick = () => {
+    setShowDownloadModal(true);
+  };
+
+  const handleDownloadConfirm = (fileName: string, saveLocation?: string) => {
+    handleDownload(fileName);
+    setShowDownloadModal(false);
     
-    // 少し待ってから送信ページに遷移
+    // ダウンロード後に送信ページに遷移するか確認
     setTimeout(() => {
-      setShowSendPage(true);
-    }, 500);
+      if (confirm('ファイルのダウンロードが完了しました。受取人に送信しますか？')) {
+        setShowSendPage(true);
+      }
+    }, 1000);
   };
 
   const handleReset = () => {
@@ -254,7 +264,7 @@ export function FileLockPage() {
 
             {/* ダウンロードボタン */}
             <button
-              onClick={handleDownloadAndSend}
+              onClick={handleDownloadClick}
               className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-4 rounded-2xl transition-all duration-300 shadow-2xl hover:shadow-blue-500/25 hover:transform hover:scale-105 text-lg"
             >
               ダウンロード
@@ -267,6 +277,15 @@ export function FileLockPage() {
           </div>
         </div>
       )}
+
+      {/* ダウンロードモーダル */}
+      <DownloadModal
+        isOpen={showDownloadModal}
+        onClose={() => setShowDownloadModal(false)}
+        onDownload={handleDownloadConfirm}
+        originalFileName={lockedFile?.originalFile?.name || ''}
+        fileSize={lockedFile?.encryptedData?.length || 0}
+      />
 
       {/* 履歴セクション */}
       <div className="bg-gradient-to-br from-white to-gray-50 rounded-3xl shadow-2xl border border-gray-100 p-10 backdrop-blur-sm">
