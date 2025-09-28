@@ -298,6 +298,7 @@ export function FileLockPage() {
         onDownload={handleDownloadConfirm}
         originalFileName={lockedFile?.originalFile?.name || ''}
         fileSize={lockedFile?.encryptedData?.length || 0}
+        fileData={lockedFile?.encryptedData}
       />
 
       {/* 履歴セクション */}
