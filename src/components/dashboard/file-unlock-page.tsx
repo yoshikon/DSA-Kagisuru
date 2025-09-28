@@ -58,7 +58,9 @@ export function FileUnlockPage() {
         // ヘッダー長を読み取り
         let headerLength;
         try {
-          headerLength = new Uint32Array(fileBytes.slice(0, 4).buffer)[0];
+          // ヘッダー長をリトルエンディアンで読み取り
+          const headerView = new DataView(fileBytes.buffer, fileBytes.byteOffset, 4);
+          headerLength = headerView.getUint32(0, true); // true = little-endian
         } catch (error) {
           throw new Error('ファイルヘッダーの読み取りに失敗しました。ファイルが破損している可能性があります。');
         }

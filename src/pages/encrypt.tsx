@@ -148,11 +148,14 @@ export function EncryptPage() {
       
       const headerJson = JSON.stringify(header);
       const headerBytes = new TextEncoder().encode(headerJson);
-      const headerLength = new Uint32Array([headerBytes.length]);
       
       // ファイル構造: [4 bytes header length][header JSON][encrypted data]
       const finalData = new Uint8Array(4 + headerBytes.length + encryptedFileData.data.length);
-      finalData.set(new Uint8Array(headerLength.buffer), 0);
+      
+      // ヘッダー長をリトルエンディアンで書き込み
+      const dataView = new DataView(finalData.buffer);
+      dataView.setUint32(0, headerBytes.length, true); // true = little-endian
+      
       finalData.set(headerBytes, 4);
       finalData.set(encryptedFileData.data, 4 + headerBytes.length);
 
