@@ -63,8 +63,8 @@ export function DownloadModal({
     try {
       const writable = await fileHandle.createWritable();
       
-      const blob = new Blob([fileData], { type: 'application/octet-stream' });
-      await writable.write(blob);
+      // fileDataを直接書き込み
+      await writable.write(fileData);
       await writable.close();
       
       // 成功時の処理

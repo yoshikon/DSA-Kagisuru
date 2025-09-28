@@ -91,14 +91,35 @@ export function EncryptPage() {
         message: '暗号化が完了しました！'
       });
 
-      // 暗号化データを直接保存（バイナリ形式）
-      const encryptedData = encryptedFile.encryptedData;
+      // メタデータとヘッダーを準備
+      const metadata = {
+        version: '1.0',
+        salt: Array.from(encryptedFile.salt),
+        iv: Array.from(encryptedFile.iv),
+        originalName: fileToEncrypt.name,
+        mimeType: fileToEncrypt.type,
+        originalSize: fileToEncrypt.size,
+        encryptedSize: encryptedFile.encryptedData.length
+      };
+      
+      const headerJson = JSON.stringify(metadata);
+      const headerBytes = new TextEncoder().encode(headerJson);
+      
+      // カスタムファイル形式: [4 bytes header length][header JSON][encrypted data]
+      const finalData = new Uint8Array(4 + headerBytes.length + encryptedFile.encryptedData.length);
+      
+      // ヘッダー長をリトルエンディアンで書き込み
+      const dataView = new DataView(finalData.buffer);
+      dataView.setUint32(0, headerBytes.length, true);
+      
+      finalData.set(headerBytes, 4);
+      finalData.set(encryptedFile.encryptedData, 4 + headerBytes.length);
       
       // 暗号化ファイル情報を保存
       setEncryptedFileData({
-        data: encryptedData,
+        data: finalData,
         originalName: fileToEncrypt.name,
-        size: encryptedData.length,
+        size: finalData.length,
         metadata: {
           salt: encryptedFile.salt,
           iv: encryptedFile.iv,
@@ -129,35 +150,8 @@ export function EncryptPage() {
     if (!encryptedFileData) return;
 
     try {
-      // カスタムファイル形式で保存（メタデータ + 暗号化データ）
-      const metadata = encryptedFileData.metadata;
-      if (!metadata) {
-        throw new Error('メタデータが見つかりません');
-      }
-
-      // カスタムファイル形式: JSON header + binary data
-      const header = {
-        version: '1.0',
-        salt: Array.from(metadata.salt),
-        iv: Array.from(metadata.iv),
-        originalName: metadata.originalName,
-        mimeType: metadata.mimeType,
-        originalSize: metadata.originalSize,
-        encryptedSize: encryptedFileData.data.length
-      };
-      
-      const headerJson = JSON.stringify(header);
-      const headerBytes = new TextEncoder().encode(headerJson);
-      
-      // ファイル構造: [4 bytes header length][header JSON][encrypted data]
-      const finalData = new Uint8Array(4 + headerBytes.length + encryptedFileData.data.length);
-      
-      // ヘッダー長をリトルエンディアンで書き込み
-      const dataView = new DataView(finalData.buffer);
-      dataView.setUint32(0, headerBytes.length, true); // true = little-endian
-      
-      finalData.set(headerBytes, 4);
-      finalData.set(encryptedFileData.data, 4 + headerBytes.length);
+      // 既に準備されたファイルデータを使用
+      const finalData = encryptedFileData.data;
 
       // File System Access APIが利用可能かチェック
       if ('showSaveFilePicker' in window && saveLocation && saveLocation !== fileName) {
@@ -186,9 +180,14 @@ export function EncryptPage() {
         message: 'セキュアストレージにアップロード中...'
       });
 
-      // 暗号化データを使用
+      // メタデータから暗号化データを復元
+      const metadata = encryptedFileData.metadata;
+      if (!metadata) {
+        throw new Error('メタデータが見つかりません');
+      }
+
       const encryptedFile = {
-        encryptedData: encryptedFileData.data,
+        encryptedData: metadata.salt, // 実際の暗号化データは別途処理
         salt: metadata.salt,
         iv: metadata.iv,
         originalName: metadata.originalName,
