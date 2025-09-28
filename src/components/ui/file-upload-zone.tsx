@@ -31,6 +31,10 @@ export function FileUploadZone({
 
   const handleFiles = useCallback((files: File[]) => {
     const validFiles = files.filter(file => {
+      if (file.size === 0) {
+        alert(`ファイル "${file.name}" は空のファイルです。暗号化されたファイルを選択してください。`);
+        return false;
+      }
       if (file.size > maxSizeBytes) {
         alert(`ファイル "${file.name}" は100MBを超えています`);
         return false;
