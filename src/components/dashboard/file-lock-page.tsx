@@ -37,28 +37,41 @@ export function FileLockPage() {
         localStorage.setItem('kagisuru_decryption_password', password);
       }
       
-      const encryptionResult = await FileEncryption.encryptFile(
+      // 実際の暗号化処理を実行
+      const encryptedFile = await FileEncryption.encryptFile(
         fileToLock,
-        password
+        password,
+        (progress) => console.log('Encryption progress:', progress)
       );
       
-      // 暗号化データとメタデータをJSON形式で保存
-      const fileData = {
-        encryptedData: Array.from(encryptionResult.encryptedData),
-        salt: Array.from(encryptionResult.salt),
-        iv: Array.from(encryptionResult.iv),
+      // メタデータとヘッダーを準備
+      const metadata = {
+        version: '1.0',
+        salt: Array.from(encryptedFile.salt),
+        iv: Array.from(encryptedFile.iv),
         originalName: fileToLock.name,
         mimeType: fileToLock.type,
-        size: fileToLock.size
+        originalSize: fileToLock.size,
+        encryptedSize: encryptedFile.encryptedData.length
       };
       
-      const jsonData = JSON.stringify(fileData);
-      const encodedData = new TextEncoder().encode(jsonData);
+      const headerJson = JSON.stringify(metadata);
+      const headerBytes = new TextEncoder().encode(headerJson);
+      
+      // カスタムファイル形式: [4 bytes header length][header JSON][encrypted data]
+      const finalData = new Uint8Array(4 + headerBytes.length + encryptedFile.encryptedData.length);
+      
+      // ヘッダー長をリトルエンディアンで書き込み
+      const dataView = new DataView(finalData.buffer);
+      dataView.setUint32(0, headerBytes.length, true);
+      
+      finalData.set(headerBytes, 4);
+      finalData.set(encryptedFile.encryptedData, 4 + headerBytes.length);
       
       // 施錠済みファイル情報を保存
       setLockedFile({
         originalFile: fileToLock,
-        encryptedData: encodedData,
+        encryptedData: finalData,
         fileName: `【施錠済み】${fileToLock.name}.kgsr`
       });
       
