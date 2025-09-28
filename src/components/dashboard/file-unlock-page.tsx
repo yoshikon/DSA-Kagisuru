@@ -46,25 +46,53 @@ export function FileUnlockPage() {
         const arrayBuffer = await file.arrayBuffer();
         const fileBytes = new Uint8Array(arrayBuffer);
         
-        // カスタムファイル形式の解析
+        // ファイルサイズの詳細チェック
+        if (fileBytes.length === 0) {
+          throw new Error('空のファイルです。暗号化されたファイルを選択してください。');
+        }
+        
         if (fileBytes.length < 4) {
-          throw new Error('ファイルが小さすぎます');
+          throw new Error('ファイルサイズが小さすぎます。正しい暗号化ファイル（.kgsr）を選択してください。');
         }
         
         // ヘッダー長を読み取り
-        const headerLength = new Uint32Array(fileBytes.slice(0, 4).buffer)[0];
+        let headerLength;
+        try {
+          headerLength = new Uint32Array(fileBytes.slice(0, 4).buffer)[0];
+        } catch (error) {
+          throw new Error('ファイルヘッダーの読み取りに失敗しました。ファイルが破損している可能性があります。');
+        }
+        
+        // ヘッダー長の妥当性チェック
+        if (headerLength <= 0 || headerLength > fileBytes.length - 4) {
+          throw new Error('無効なファイル形式です。正しい暗号化ファイル（.kgsr）を選択してください。');
+        }
         
         if (fileBytes.length < 4 + headerLength) {
-          throw new Error('ファイル形式が正しくありません');
+          throw new Error('ファイルが不完全です。ファイルが破損しているか、正しい暗号化ファイルではありません。');
         }
         
         // ヘッダーJSONを読み取り
-        const headerBytes = fileBytes.slice(4, 4 + headerLength);
-        const headerJson = new TextDecoder().decode(headerBytes);
-        const header = JSON.parse(headerJson);
+        let header;
+        try {
+          const headerBytes = fileBytes.slice(4, 4 + headerLength);
+          const headerJson = new TextDecoder().decode(headerBytes);
+          header = JSON.parse(headerJson);
+        } catch (error) {
+          throw new Error('ファイルメタデータの読み取りに失敗しました。ファイルが破損しているか、対応していない形式です。');
+        }
+        
+        // 必要なプロパティの存在チェック
+        if (!header.salt || !header.iv || !header.originalName) {
+          throw new Error('ファイルに必要な暗号化情報が含まれていません。正しい暗号化ファイルを選択してください。');
+        }
         
         // 暗号化データを読み取り
         const encryptedData = fileBytes.slice(4 + headerLength);
+        
+        if (encryptedData.length === 0) {
+          throw new Error('暗号化データが見つかりません。ファイルが不完全です。');
+        }
         
         parsedData = {
           version: header.version,
@@ -79,7 +107,7 @@ export function FileUnlockPage() {
         setFileMetadata(parsedData);
       } catch (parseError) {
         console.error('File parse error:', parseError);
-        setError('このファイル形式はサポートされていません。正しい.kgsrファイルを選択してください。');
+        setError(parseError instanceof Error ? parseError.message : 'ファイルの解析に失敗しました。正しい暗号化ファイル（.kgsr）を選択してください。');
         setIsUnlocking(false);
         return;
       }
