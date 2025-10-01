@@ -44,6 +44,7 @@ export class EmailService {
   }): Promise<void> {
     try {
       if (supabase) {
+        console.log(`📧 Supabase Edge Functionでメール送信中: ${emailData.to}`);
         const { error } = await supabase.functions.invoke('send-email', {
           body: {
             to: emailData.to,
@@ -59,20 +60,26 @@ export class EmailService {
         
         console.log(`✅ メール送信成功: ${emailData.to}`);
       } else {
-        throw new Error('Supabase not available');
+        console.warn('⚠️ Supabase設定が無効です。開発環境用のメール送信シミュレーションを実行します。');
+        
+        // 開発環境用のメール送信シミュレーション
+        console.log('📧 メール送信（開発環境）:', {
+          to: emailData.to,
+          subject: emailData.subject,
+          fileId: emailData.fileId
+        });
+        
+        // 実際のメール送信をシミュレート（2秒待機）
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        console.log(`✅ メール送信完了（シミュレーション）: ${emailData.to}`);
+        return;
       }
     } catch (error) {
       console.error('Supabase function error:', error);
       
-      // フォールバック: 開発環境用のメール送信シミュレーション
-      console.log('📧 メール送信（開発環境）:', {
-        to: emailData.to,
-        subject: emailData.subject,
-        fileId: emailData.fileId
-      });
-      
-      // 開発環境では成功として扱う
-      return;
+      // Supabaseエラーの場合は実際のエラーを投げる
+      throw new Error(`メール送信に失敗しました (${emailData.to}): ${error.message || error}`);
     }
   }
 

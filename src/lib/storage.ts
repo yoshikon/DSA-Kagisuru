@@ -8,7 +8,7 @@ export class FileStorage {
 
   // 暗号化ファイル保存（デモ用、実際はCloudflare R2使用）
   static async saveEncryptedFile(fileData: {
-    encryptedData: Uint8Array;
+    encryptedData: Uint8Array | ArrayBuffer;
     salt: Uint8Array;
     iv: Uint8Array;
     originalName: string;
@@ -32,8 +32,17 @@ export class FileStorage {
           supabaseKey.length > 20) {
         try {
           console.log('Supabaseデータベースに保存を試行中...');
+          
+          // encryptedDataをUint8Arrayに変換
+          const encryptedDataArray = fileData.encryptedData instanceof Uint8Array 
+            ? fileData.encryptedData 
+            : new Uint8Array(fileData.encryptedData);
+          
           const result = await DatabaseService.saveEncryptedFile(
-            fileData, 
+            {
+              ...fileData,
+              encryptedData: encryptedDataArray
+            }, 
             recipients, 
             expiryDays, 
             message,
@@ -61,7 +70,12 @@ export class FileStorage {
       }
       
       // ローカルストレージに保存（バックアップまたはメイン）
-      const encryptedBase64 = btoa(String.fromCharCode(...fileData.encryptedData));
+      // encryptedDataをUint8Arrayに変換してからBase64エンコード
+      const encryptedDataArray = fileData.encryptedData instanceof Uint8Array 
+        ? fileData.encryptedData 
+        : new Uint8Array(fileData.encryptedData);
+      
+      const encryptedBase64 = this.uint8ArrayToBase64(encryptedDataArray);
       const saltBase64 = btoa(String.fromCharCode(...fileData.salt));
       const ivBase64 = btoa(String.fromCharCode(...fileData.iv));
 
@@ -103,7 +117,8 @@ export class FileStorage {
         console.log('✅ メール送信完了');
       } catch (emailError) {
         console.warn('⚠️ メール送信に失敗:', emailError);
-        // メール送信失敗でもファイル保存は成功として扱う
+        // メール送信失敗の場合はエラーを投げる
+        throw new Error(`ファイル保存は成功しましたが、メール送信に失敗しました: ${emailError.message || emailError}`);
       }
       
       return fileId;
@@ -113,6 +128,18 @@ export class FileStorage {
     }
   }
 
+  // Helper function to convert Uint8Array to Base64 in chunks to avoid call stack overflow
+  private static uint8ArrayToBase64(uint8Array: Uint8Array): string {
+    const chunkSize = 8192; // Process in 8KB chunks
+    let result = '';
+    
+    for (let i = 0; i < uint8Array.length; i += chunkSize) {
+      const chunk = uint8Array.slice(i, i + chunkSize);
+      result += String.fromCharCode(...chunk);
+    }
+    
+    return btoa(result);
+  }
   // ファイルID生成
   private static generateFileId(): string {
     return 'file_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);

@@ -74,6 +74,7 @@ export function EncryptPage() {
         message: 'AES-256で暗号化中...'
       });
 
+      // 実際の暗号化処理を実行
       const encryptedFile = await FileEncryption.encryptFile(
         fileToEncrypt,
         password,
@@ -86,8 +87,8 @@ export function EncryptPage() {
       );
 
       setProgress({
-        step: 'complete',
-        progress: 100,
+        step: 'encrypting',
+        progress: 70,
         message: '暗号化が完了しました！'
       });
 
@@ -129,8 +130,17 @@ export function EncryptPage() {
         }
       });
 
-      setIsEncrypting(false);
-      setShowDownloadModal(true);
+      setProgress({
+        step: 'complete',
+        progress: 100,
+        message: '暗号化が完了しました！'
+      });
+
+      // 少し待ってからダウンロードモーダルを表示
+      setTimeout(() => {
+        setIsEncrypting(false);
+        setShowDownloadModal(true);
+      }, 1000);
 
     } catch (error) {
       console.error('Encryption failed:', error);
@@ -147,7 +157,10 @@ export function EncryptPage() {
   }, [files]);
 
   const handleDownloadComplete = async (fileName: string, saveLocation?: string) => {
-    if (!encryptedFileData) return;
+    if (!encryptedFileData || !encryptedFileData.metadata) {
+      console.error('暗号化ファイルデータが見つかりません');
+      return;
+    }
 
     try {
       // 既に準備されたファイルデータを使用
@@ -176,18 +189,15 @@ export function EncryptPage() {
       
       setProgress({
         step: 'uploading',
-        progress: 80,
-        message: 'セキュアストレージにアップロード中...'
+        progress: 10,
+        message: 'ファイルをセキュアストレージに保存中...'
       });
 
-      // メタデータから暗号化データを復元
+      // ファイル保存用のデータを準備
       const metadata = encryptedFileData.metadata;
-      if (!metadata) {
-        throw new Error('メタデータが見つかりません');
-      }
 
-      const encryptedFile = {
-        encryptedData: metadata.salt, // 実際の暗号化データは別途処理
+      const fileDataForStorage = {
+        encryptedData: finalData, // 完全な暗号化ファイル
         salt: metadata.salt,
         iv: metadata.iv,
         originalName: metadata.originalName,
@@ -195,9 +205,15 @@ export function EncryptPage() {
         size: metadata.originalSize
       };
 
+      setProgress({
+        step: 'uploading',
+        progress: 40,
+        message: 'ファイル情報を保存中...'
+      });
+
       // ファイル保存（メール送信も含む）
       const fileId = await FileStorage.saveEncryptedFile(
-        encryptedFile, 
+        fileDataForStorage, 
         recipients, 
         expiryDays, 
         message,
@@ -205,8 +221,8 @@ export function EncryptPage() {
       );
       
       setProgress({
-        step: 'complete',
-        progress: 90,
+        step: 'uploading',
+        progress: 80,
         message: 'メール送信中...'
       });
 
@@ -215,9 +231,9 @@ export function EncryptPage() {
         setProgress({
           step: 'complete',
           progress: 100,
-          message: '暗号化とメール送信が完了しました！'
+          message: `✅ 暗号化完了！${recipients.length}名の受信者にメールを送信しました`
         });
-      }, 1000);
+      }, 2000);
 
       // リセット
       setTimeout(() => {
@@ -229,17 +245,17 @@ export function EncryptPage() {
         setIsEncrypting(false);
         
         // ダッシュボードに移動するかユーザーに確認
-        if (confirm('ファイルの送信が完了しました。ダッシュボードで送信状況を確認しますか？')) {
+        if (confirm('✅ ファイルの暗号化と送信が完了しました！\n\nダッシュボードで送信状況を確認しますか？')) {
           window.location.href = '/dashboard';
         }
-      }, 4000);
+      }, 5000);
 
     } catch (error) {
       console.error('File processing failed:', error);
       setProgress({
         step: 'error',
         progress: 0,
-        message: 'ファイル処理に失敗しました'
+        message: error instanceof Error ? error.message : 'ファイル処理に失敗しました'
       });
 
       setTimeout(() => {
