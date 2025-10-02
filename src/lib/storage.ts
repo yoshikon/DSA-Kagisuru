@@ -1,5 +1,5 @@
 import { DatabaseService } from './database';
-import { isSupabaseAvailable } from './supabase';
+import { isSupabaseAvailable, isValidSupabaseConfig } from './supabase';
 import { EmailService } from './email-service';
 
 // ローカルストレージヘルパー（フォールバック用）
@@ -25,11 +25,7 @@ export class FileStorage {
       let accessTokens: { [email: string]: string } = {};
       
       // Supabaseの設定が完全かチェック（より厳密に）
-      if (supabaseUrl && supabaseKey && 
-          supabaseUrl !== 'your-supabase-url' && 
-          supabaseKey !== 'your-supabase-anon-key' &&
-          supabaseUrl.startsWith('https://') &&
-          supabaseKey.length > 20) {
+      if (isValidSupabaseConfig(supabaseUrl, supabaseKey)) {
         try {
           console.log('Supabaseデータベースに保存を試行中...');
           
@@ -52,6 +48,25 @@ export class FileStorage {
           accessTokens = result.accessTokens;
           useDatabase = true;
           console.log('データベース保存成功:', fileId);
+          
+          // データベース保存成功時はローカルストレージには最小限の情報のみ保存
+          const minimalFileRecord = {
+            id: fileId,
+            originalName: fileData.originalName,
+            mimeType: fileData.mimeType,
+            size: fileData.size,
+            recipients: recipients,
+            createdAt: new Date().toISOString(),
+            expiresAt: new Date(Date.now() + expiryDays * 24 * 60 * 60 * 1000).toISOString(),
+            downloadCount: 0,
+            message: message,
+            requireVerification: requireVerification,
+            storedInDatabase: true // フラグを追加
+          };
+          
+          localStorage.setItem(`${this.STORAGE_PREFIX}${fileId}`, JSON.stringify(minimalFileRecord));
+          this.updateFileList(fileId);
+          
         } catch (dbError) {
           console.warn('データベース保存に失敗、ローカルストレージを使用:', dbError);
           fileId = this.generateFileId();
@@ -59,6 +74,7 @@ export class FileStorage {
           recipients.forEach(email => {
             accessTokens[email] = this.generateAccessToken(fileId, email);
           });
+          useDatabase = false;
         }
       } else {
         console.info('Supabase環境変数が未設定または無効です。ローカルストレージを使用します。');
@@ -67,40 +83,46 @@ export class FileStorage {
         recipients.forEach(email => {
           accessTokens[email] = this.generateAccessToken(fileId, email);
         });
+        useDatabase = false;
       }
       
-      // ローカルストレージに保存（バックアップまたはメイン）
-      // encryptedDataをUint8Arrayに変換してからBase64エンコード
-      const encryptedDataArray = fileData.encryptedData instanceof Uint8Array 
-        ? fileData.encryptedData 
-        : new Uint8Array(fileData.encryptedData);
-      
-      const encryptedBase64 = this.uint8ArrayToBase64(encryptedDataArray);
-      const saltBase64 = btoa(String.fromCharCode(...fileData.salt));
-      const ivBase64 = btoa(String.fromCharCode(...fileData.iv));
-
-      const fileRecord = {
-        id: fileId,
-        encryptedData: encryptedBase64,
-        salt: saltBase64,
-        iv: ivBase64,
-        originalName: fileData.originalName,
-        mimeType: fileData.mimeType,
-        size: fileData.size,
-        recipients: recipients,
-        accessTokens: accessTokens,
-        createdAt: new Date().toISOString(),
-        expiresAt: new Date(Date.now() + expiryDays * 24 * 60 * 60 * 1000).toISOString(),
-        downloadCount: 0,
-        message: message,
-        requireVerification: requireVerification
-      };
-
-      localStorage.setItem(`${this.STORAGE_PREFIX}${fileId}`, JSON.stringify(fileRecord));
-      this.updateFileList(fileId);
-      
+      // データベース保存に失敗した場合のみローカルストレージに完全なデータを保存
       if (!useDatabase) {
-        console.log('ローカルストレージ保存完了:', fileId);
+        try {
+          // encryptedDataをUint8Arrayに変換してからBase64エンコード
+          const encryptedDataArray = fileData.encryptedData instanceof Uint8Array 
+            ? fileData.encryptedData 
+            : new Uint8Array(fileData.encryptedData);
+          
+          const encryptedBase64 = this.uint8ArrayToBase64(encryptedDataArray);
+          const saltBase64 = btoa(String.fromCharCode(...fileData.salt));
+          const ivBase64 = btoa(String.fromCharCode(...fileData.iv));
+
+          const fileRecord = {
+            id: fileId,
+            encryptedData: encryptedBase64,
+            salt: saltBase64,
+            iv: ivBase64,
+            originalName: fileData.originalName,
+            mimeType: fileData.mimeType,
+            size: fileData.size,
+            recipients: recipients,
+            accessTokens: accessTokens,
+            createdAt: new Date().toISOString(),
+            expiresAt: new Date(Date.now() + expiryDays * 24 * 60 * 60 * 1000).toISOString(),
+            downloadCount: 0,
+            message: message,
+            requireVerification: requireVerification,
+            storedInDatabase: false
+          };
+
+          localStorage.setItem(`${this.STORAGE_PREFIX}${fileId}`, JSON.stringify(fileRecord));
+          this.updateFileList(fileId);
+          console.log('ローカルストレージ保存完了:', fileId);
+        } catch (storageError) {
+          console.error('ローカルストレージ保存エラー:', storageError);
+          throw new Error('ファイルの保存に失敗しました。ファイルサイズが大きすぎる可能性があります。');
+        }
       }
       
       // メール送信

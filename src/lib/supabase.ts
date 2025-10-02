@@ -5,7 +5,7 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const supabaseServiceRoleKey = import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
 
 // 環境変数が適切に設定されているかチェック
-const isValidSupabaseConfig = (url: string, key: string): boolean => {
+export const isValidSupabaseConfig = (url: string, key: string): boolean => {
   // より厳密な検証
   if (!url || !key) return false;
   
