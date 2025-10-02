@@ -91,9 +91,9 @@ export function AccessPermissionModal({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl">
+      <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] shadow-2xl flex flex-col">
         {/* ヘッダー */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 flex-shrink-0">
           <h2 className="text-2xl font-bold text-gray-900">アクセス権限設定</h2>
           <button
             onClick={onClose}
@@ -103,7 +103,7 @@ export function AccessPermissionModal({
           </button>
         </div>
 
-        <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
+        <div className="p-6 overflow-y-auto flex-1 min-h-0">
           {/* 説明セクション */}
           <div className="bg-blue-50 border border-blue-200 rounded-2xl p-6 mb-8">
             <div className="flex items-start space-x-3">
@@ -251,7 +251,7 @@ export function AccessPermissionModal({
         </div>
 
         {/* フッター */}
-        <div className="flex items-center justify-between p-6 border-t border-gray-200 bg-gray-50">
+        <div className="flex items-center justify-between p-6 border-t border-gray-200 bg-gray-50 flex-shrink-0">
           <div className="text-sm text-gray-600">
             アクセス権限なし（誰でもアクセス可能）
           </div>
