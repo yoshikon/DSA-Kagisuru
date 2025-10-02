@@ -166,7 +166,7 @@ export function RecipientForm({
                   disabled={disabled}
                 >
                   <X className={`h-3 w-3 ${requireVerification ? 'text-green-700' : 'text-blue-700'}`} />
-                🔒 受信者認証有効: これらのメールアドレスでのみアクセス可能です
+                </button>
               </div>
             ))}
           </div>
