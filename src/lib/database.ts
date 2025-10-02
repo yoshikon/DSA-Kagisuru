@@ -49,6 +49,7 @@ export class DatabaseService {
           salt: saltBase64,
           iv: ivBase64,
           expires_at: expiresAt.toISOString(),
+          max_downloads: maxDownloads,
           message: message || null,
           download_count: 0,
           require_verification: requireVerification

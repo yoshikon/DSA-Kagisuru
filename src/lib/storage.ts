@@ -111,6 +111,7 @@ export class FileStorage {
             createdAt: new Date().toISOString(),
             expiresAt: new Date(Date.now() + expiryDays * 24 * 60 * 60 * 1000).toISOString(),
             downloadCount: 0,
+            maxDownloads: maxDownloads,
             message: message,
             requireVerification: requireVerification,
             storedInDatabase: false
