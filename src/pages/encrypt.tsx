@@ -117,6 +117,7 @@ export function EncryptPage() {
         fileDataForStorage, 
         recipients, 
         expiryDays, 
+        maxDownloads,
         message,
         requireVerification
       );
@@ -152,7 +153,7 @@ export function EncryptPage() {
         setIsEncrypting(false);
       }, 3000);
     }
-  }, [files, recipients, expiryDays, message, requireVerification]);
+  }, [files, recipients, expiryDays, maxDownloads, message, requireVerification]);
 
   const performEncryptionForDownload = useCallback(async (password: string) => {
     setIsEncrypting(true);
@@ -314,6 +315,7 @@ export function EncryptPage() {
         fileDataForStorage, 
         recipients, 
         expiryDays, 
+        maxDownloads,
         message,
         requireVerification
       );
