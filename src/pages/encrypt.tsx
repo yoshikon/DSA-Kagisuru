@@ -5,6 +5,7 @@ import { RecipientForm } from '../components/encrypt/recipient-form';
 import { EncryptionOptions } from '../components/encrypt/encryption-options';
 import { EncryptionProgressModal } from '../components/encrypt/encryption-progress';
 import { PasswordSetupModal } from '../components/encrypt/password-setup-modal';
+import { AccessPermissionModal } from '../components/encrypt/access-permission-modal';
 import { DownloadModal } from '../components/dashboard/download-modal';
 import { FileEncryption } from '../lib/crypto';
 import { FileStorage } from '../lib/storage';
@@ -22,6 +23,7 @@ export function EncryptPage() {
   const [isEncrypting, setIsEncrypting] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showDownloadModal, setShowDownloadModal] = useState(false);
+  const [showAccessPermissionModal, setShowAccessPermissionModal] = useState(false);
   const [encryptionPassword, setEncryptionPassword] = useState('');
   const [encryptedFileData, setEncryptedFileData] = useState<{
     data: Uint8Array;
@@ -254,6 +256,18 @@ export function EncryptPage() {
     }
   }, [files]);
 
+  const handleAdvancedPermissions = () => {
+    setShowAccessPermissionModal(true);
+  };
+
+  const handleAccessPermissionSave = (permissions: any[]) => {
+    // アクセス権限の保存処理
+    console.log('Access permissions saved:', permissions);
+    // 必要に応じて受信者リストを更新
+    const emails = permissions.map(p => p.email);
+    setRecipients(emails);
+  };
+
   const handleDownloadComplete = async (fileName: string, saveLocation?: string) => {
     if (!encryptedFileData || !encryptedFileData.metadata) {
       console.error('暗号化ファイルデータが見つかりません');
@@ -445,6 +459,7 @@ export function EncryptPage() {
                 onMessageChange={setMessage}
                 onVerificationChange={setRequireVerification}
                 disabled={isEncrypting}
+                onAdvancedPermissions={handleAdvancedPermissions}
               />
             </div>
           </div>
@@ -532,6 +547,14 @@ export function EncryptPage() {
         originalFileName={encryptedFileData?.originalName || ''}
         fileSize={encryptedFileData?.size || 0}
         fileData={encryptedFileData?.data}
+      />
+      
+      {/* アクセス権限設定モーダル */}
+      <AccessPermissionModal
+        isOpen={showAccessPermissionModal}
+        onClose={() => setShowAccessPermissionModal(false)}
+        onSave={handleAccessPermissionSave}
+        initialRecipients={recipients}
       />
     </div>
   );

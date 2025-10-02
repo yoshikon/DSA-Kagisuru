@@ -1,5 +1,5 @@
 import React from 'react';
-import { Clock, MessageCircle, Download, Shield } from 'lucide-react';
+import { Clock, MessageCircle, Download, Shield, Settings } from 'lucide-react';
 
 interface EncryptionOptionsProps {
   expiryDays: number;
@@ -11,6 +11,7 @@ interface EncryptionOptionsProps {
   onMessageChange: (message: string) => void;
   onVerificationChange: (required: boolean) => void;
   disabled?: boolean;
+  onAdvancedPermissions?: () => void;
 }
 
 export function EncryptionOptions({
@@ -22,7 +23,8 @@ export function EncryptionOptions({
   onMaxDownloadsChange,
   onMessageChange,
   onVerificationChange,
-  disabled = false
+  disabled = false,
+  onAdvancedPermissions
 }: EncryptionOptionsProps) {
   const expiryOptions = [
     { value: 1, label: '1日' },
@@ -134,6 +136,24 @@ export function EncryptionOptions({
           </label>
         </div>
       </div>
+
+      {/* 詳細なアクセス権限設定ボタン */}
+      {onAdvancedPermissions && (
+        <div className="pt-6 border-t border-gray-200">
+          <button
+            type="button"
+            onClick={onAdvancedPermissions}
+            disabled={disabled}
+            className="w-full inline-flex items-center justify-center px-6 py-4 bg-gradient-to-r from-purple-600 to-purple-700 text-white font-bold rounded-2xl hover:from-purple-700 hover:to-purple-800 focus:ring-4 focus:ring-purple-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-xl hover:shadow-purple-500/25 hover:transform hover:scale-105 space-x-3 text-lg"
+          >
+            <Settings className="h-6 w-6" />
+            <span>詳細なアクセス権限を設定</span>
+          </button>
+          <p className="mt-2 text-sm text-gray-500 text-center">
+            各受信者に対して個別の権限を設定できます
+          </p>
+        </div>
+      )}
 
       {/* メッセージ */}
       <div className="pt-6 border-t border-gray-200">
