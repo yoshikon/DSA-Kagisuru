@@ -26,7 +26,7 @@ export class EmailService {
           to: email,
           subject: `【カギエース】暗号化ファイル「${fileName}」が共有されました`,
           html: this.generateEmailTemplate(fileName, accessUrl, senderMessage, requireVerification, email),
-          fileId: fileId
+          fileId: fileId,
           senderName: sender.name
         });
       }
