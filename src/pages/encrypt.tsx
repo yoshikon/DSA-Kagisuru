@@ -16,6 +16,7 @@ export function EncryptPage() {
   const [files, setFiles] = useState<File[]>([]);
   const [recipients, setRecipients] = useState<string[]>([]);
   const [expiryDays, setExpiryDays] = useState(7);
+  const [maxDownloads, setMaxDownloads] = useState<number | null>(5);
   const [message, setMessage] = useState('');
   const [requireVerification, setRequireVerification] = useState(true);
   const [isEncrypting, setIsEncrypting] = useState(false);
