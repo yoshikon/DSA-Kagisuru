@@ -25,7 +25,7 @@ export class EmailService {
         await this.sendEmail({
           to: email,
           subject: `【カギエース】暗号化ファイル「${fileName}」が共有されました`,
-          html: this.generateEmailTemplate(fileName, accessUrl, senderMessage, requireVerification, email),
+          html: this.generateEmailTemplate(fileName, accessUrl, senderMessage, requireVerification, email, sender),
           fileId: fileId,
           senderName: sender.name
         });
@@ -95,7 +95,8 @@ export class EmailService {
     accessUrl: string,
     senderMessage?: string,
     requireVerification: boolean = true,
-    recipientEmail?: string
+    recipientEmail?: string,
+    senderInfo?: { name: string; email: string }
   ): string {
     return `
       <!DOCTYPE html>
