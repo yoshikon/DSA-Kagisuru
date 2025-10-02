@@ -52,9 +52,106 @@ export function EncryptPage() {
   const handleEncrypt = useCallback(async () => {
     if (!canEncrypt) return;
     
-    // パスワード設定モーダルを表示
-    setShowPasswordModal(true);
+    // 直接暗号化と送信を実行
+    await performDirectEncryptionAndSend();
   }, [canEncrypt]);
+
+  const performDirectEncryptionAndSend = useCallback(async () => {
+    setIsEncrypting(true);
+    setProgress({
+      step: 'preparing',
+      progress: 10,
+      message: 'ファイルの準備中...'
+    });
+
+    try {
+      // 自動パスワード生成
+      const password = FileEncryption.generatePassword();
+      
+      // 暗号化処理
+      const fileToEncrypt = files[0];
+
+      setProgress({
+        step: 'encrypting',
+        progress: 30,
+        message: 'AES-256で暗号化中...'
+      });
+
+      // 実際の暗号化処理を実行
+      const encryptedFile = await FileEncryption.encryptFile(
+        fileToEncrypt,
+        password,
+        (progress) => {
+          setProgress(prev => ({
+            ...prev,
+            progress: 30 + (progress * 0.3)
+          }));
+        }
+      );
+
+      setProgress({
+        step: 'uploading',
+        progress: 60,
+        message: 'ファイルをセキュアストレージに保存中...'
+      });
+
+      // ファイル保存用のデータを準備
+      const fileDataForStorage = {
+        encryptedData: encryptedFile.encryptedData,
+        salt: encryptedFile.salt,
+        iv: encryptedFile.iv,
+        originalName: fileToEncrypt.name,
+        mimeType: fileToEncrypt.type,
+        size: fileToEncrypt.size
+      };
+
+      setProgress({
+        step: 'uploading',
+        progress: 80,
+        message: 'メール送信中...'
+      });
+
+      // ファイル保存（メール送信も含む）
+      const fileId = await FileStorage.saveEncryptedFile(
+        fileDataForStorage, 
+        recipients, 
+        expiryDays, 
+        message,
+        requireVerification
+      );
+      
+      setProgress({
+        step: 'complete',
+        progress: 100,
+        message: `✅ 暗号化完了！${recipients.length}名の受信者にメールを送信しました`
+      });
+
+      // 完了後の処理
+      setTimeout(() => {
+        setFiles([]);
+        setRecipients([]);
+        setMessage('');
+        setIsEncrypting(false);
+        
+        // 成功メッセージと次のアクション
+        if (confirm('✅ ファイルの暗号化と送信が完了しました！\n\nダッシュボードで送信状況を確認しますか？')) {
+          window.location.href = '/dashboard';
+        }
+      }, 3000);
+
+    } catch (error) {
+      console.error('Encryption and send failed:', error);
+      setProgress({
+        step: 'error',
+        progress: 0,
+        message: error instanceof Error ? error.message : '暗号化または送信に失敗しました'
+      });
+
+      setTimeout(() => {
+        setIsEncrypting(false);
+      }, 3000);
+    }
+  }, [files, recipients, expiryDays, message, requireVerification]);
 
   const performEncryptionForDownload = useCallback(async (password: string) => {
     setIsEncrypting(true);
@@ -363,11 +460,11 @@ export function EncryptPage() {
               <button
                 onClick={handleEncrypt}
                 disabled={!canEncrypt || isEncrypting}
-                className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 space-x-2"
+                className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-bold rounded-xl hover:from-blue-700 hover:to-blue-800 focus:ring-4 focus:ring-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-xl hover:shadow-blue-500/25 hover:transform hover:scale-105 space-x-3 text-lg"
               >
-                <Lock className="h-5 w-5" />
-                <span>暗号化して送信</span>
-                <ArrowRight className="h-4 w-4" />
+                <Lock className="h-6 w-6" />
+                <span>{isEncrypting ? '暗号化・送信中...' : '暗号化して送信'}</span>
+                <ArrowRight className="h-5 w-5" />
               </button>
             </div>
           </div>

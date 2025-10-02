@@ -8,10 +8,12 @@ export class EmailService {
     fileName: string,
     accessTokens: { [email: string]: string },
     senderMessage?: string,
-    requireVerification: boolean = true
+    requireVerification: boolean = true,
+    senderInfo?: { name: string; email: string }
   ): Promise<boolean> {
     try {
       const baseUrl = import.meta.env.VITE_APP_URL || window.location.origin;
+      const sender = senderInfo || { name: 'カギエース', email: 'noreply@kagisuru.com' };
       
       // 各受信者に個別メール送信
       for (const email of recipients) {
@@ -25,6 +27,7 @@ export class EmailService {
           subject: `【カギエース】暗号化ファイル「${fileName}」が共有されました`,
           html: this.generateEmailTemplate(fileName, accessUrl, senderMessage, requireVerification, email),
           fileId: fileId
+          senderName: sender.name
         });
       }
 
@@ -41,6 +44,7 @@ export class EmailService {
     subject: string;
     html: string;
     fileId: string;
+    senderName?: string;
   }): Promise<void> {
     try {
       if (supabase) {
@@ -49,7 +53,8 @@ export class EmailService {
           body: {
             to: emailData.to,
             subject: emailData.subject,
-            html: emailData.html
+            html: emailData.html,
+            senderName: emailData.senderName || 'カギエース'
           }
         });
 
@@ -66,7 +71,8 @@ export class EmailService {
         console.log('📧 メール送信（開発環境）:', {
           to: emailData.to,
           subject: emailData.subject,
-          fileId: emailData.fileId
+          fileId: emailData.fileId,
+          senderName: emailData.senderName
         });
         
         // 実際のメール送信をシミュレート（2秒待機）
@@ -119,6 +125,10 @@ export class EmailService {
           
           <div class="content">
             <h2>暗号化ファイルが共有されました</h2>
+            
+            <div class="sender-info" style="background: #e8f4fd; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #3B82F6;">
+              <p style="margin: 0; color: #1e40af;"><strong>送信者:</strong> ${senderInfo?.name || 'カギエース'}</p>
+            </div>
             
             <div class="file-info">
               <h3>📁 ${fileName}</h3>

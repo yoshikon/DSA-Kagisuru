@@ -106,13 +106,21 @@ export class FileStorage {
       // メール送信
       try {
         console.log('📧 メール送信開始...');
+        
+        // 送信者情報（実際のアプリケーションでは認証されたユーザー情報を使用）
+        const senderInfo = {
+          name: '送信者',
+          email: 'sender@example.com'
+        };
+        
         await EmailService.sendFileNotification(
           recipients,
           fileId,
           fileData.originalName,
           accessTokens,
           message,
-          requireVerification
+          requireVerification,
+          senderInfo
         );
         console.log('✅ メール送信完了');
       } catch (emailError) {

@@ -12,7 +12,7 @@ Deno.serve(async (req) => {
 
   try {
     console.log('📧 メール送信リクエストを受信しました');
-    const { to, subject, html } = await req.json()
+    const { to, subject, html, senderName } = await req.json()
     
     if (!to || !subject || !html) {
       throw new Error('必須パラメータが不足しています: to, subject, html')
@@ -53,7 +53,7 @@ Deno.serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'カギエース <noreply@kagisuru.com>',
+        from: `${senderName || 'カギエース'} <noreply@kagisuru.com>`,
         to: [to],
         subject: subject,
         html: html,
