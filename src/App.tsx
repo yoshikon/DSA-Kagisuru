@@ -4,6 +4,8 @@ import { HomePage } from './pages/home';
 import { EncryptPage } from './pages/encrypt';
 import { AccessPage } from './pages/access';
 import { DashboardPage } from './pages/dashboard';
+import LoginPage from './pages/login';
+import SignUpPage from './pages/signup';
 
 function App() {
   return (
@@ -12,6 +14,8 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/encrypt" element={<EncryptPage />} />
         <Route path="/access" element={<AccessPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignUpPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
       </Routes>
     </Router>
