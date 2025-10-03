@@ -9,7 +9,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (user && !loading) {
-      navigate('/dashboard');
+      navigate('/dashboard-new');
     }
   }, [user, loading, navigate]);
 
@@ -26,7 +26,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <LoginForm onSuccess={() => navigate('/dashboard')} />
+      <LoginForm onSuccess={() => navigate('/dashboard-new')} />
     </div>
   );
 }
