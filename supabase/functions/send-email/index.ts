@@ -1,32 +1,34 @@
-// Supabase Edge Function for sending emails
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { Resend } from "npm:resend@4.0.0";
+
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Client-Info, Apikey',
-}
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Client-Info, Apikey",
+};
 
 Deno.serve(async (req) => {
   // CORS対応
-  if (req.method === 'OPTIONS') {
+  if (req.method === "OPTIONS") {
     return new Response(null, {
       status: 200,
       headers: corsHeaders,
-    })
+    });
   }
 
   try {
     console.log('📧 メール送信リクエストを受信しました');
-    const { to, subject, html, senderName } = await req.json()
+    const { to, subject, html, senderName } = await req.json();
     
     if (!to || !subject || !html) {
-      throw new Error('必須パラメータが不足しています: to, subject, html')
+      throw new Error('必須パラメータが不足しています: to, subject, html');
     }
     
     console.log(`📧 メール送信先: ${to}`);
     console.log(`📧 件名: ${subject}`);
 
-    // 実際のメール送信処理
-    const resendApiKey = Deno.env.get('RESEND_API_KEY')
+    // Resend APIキーを取得
+    const resendApiKey = Deno.env.get('RESEND_API_KEY');
     
     if (!resendApiKey) {
       console.warn('⚠️ RESEND_API_KEY が設定されていません。開発環境用のシミュレーションを実行します。');
@@ -46,47 +48,42 @@ Deno.serve(async (req) => {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 200,
         },
-      )
+      );
     }
 
-    console.log('📧 Resend APIでメール送信中...');
-    const emailResponse = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${resendApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: 'onboarding@resend.dev',
-        to: [to],
-        subject: subject,
-        html: html,
-        reply_to: senderName ? `${senderName} <noreply@resend.dev>` : undefined,
-      }),
-    })
+    console.log('📧 Resend SDKでメール送信中...');
+    
+    // Resend SDKを使用してメール送信
+    const resend = new Resend(resendApiKey);
+    
+    const { data, error } = await resend.emails.send({
+      from: 'onboarding@resend.dev',
+      to: [to],
+      subject: subject,
+      html: html,
+      reply_to: senderName ? `${senderName} <noreply@resend.dev>` : undefined,
+    });
 
-    if (!emailResponse.ok) {
-      const error = await emailResponse.text()
-      console.error('❌ Resend API エラー:', error);
-      throw new Error(`Resend API error: ${error}`)
+    if (error) {
+      console.error('❌ Resend SDK エラー:', error);
+      throw new Error(`Resend API error: ${JSON.stringify(error)}`);
     }
 
-    const result = await emailResponse.json()
-    console.log(`✅ メール送信成功: ${to} (ID: ${result.id})`);
+    console.log(`✅ メール送信成功: ${to} (ID: ${data?.id})`);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        messageId: result.id,
+        messageId: data?.id,
         message: 'Email sent successfully'
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       },
-    )
+    );
   } catch (error) {
-    console.error('❌ メール送信エラー:', error)
+    console.error('❌ メール送信エラー:', error);
     
     return new Response(
       JSON.stringify({ 
@@ -98,6 +95,6 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,
       },
-    )
+    );
   }
-})
+});
