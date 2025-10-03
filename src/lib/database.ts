@@ -23,7 +23,7 @@ export class DatabaseService {
     originalName: string;
     mimeType: string;
     size: number;
-  }, recipients: string[], expiryDays: number, message?: string, requireVerification: boolean = true): Promise<{ fileId: string; accessTokens: { [email: string]: string } }> {
+  }, recipients: string[], expiryDays: number, message?: string, requireVerification: boolean = true, maxDownloads: number | null = null): Promise<{ fileId: string; accessTokens: { [email: string]: string } }> {
     // Supabaseが利用できない場合はエラーを投げる
     if (!isSupabaseAvailable() || !supabase) {
       throw new Error('データベースサービスが利用できません。環境変数を確認してください。');

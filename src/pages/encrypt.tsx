@@ -116,11 +116,12 @@ export function EncryptPage() {
 
       // ファイル保存（メール送信も含む）
       const fileId = await FileStorage.saveEncryptedFile(
-        fileDataForStorage, 
-        recipients, 
-        expiryDays, 
+        fileDataForStorage,
+        recipients,
+        expiryDays,
         message,
-        requireVerification
+        requireVerification,
+        maxDownloads
       );
       
       setProgress({
@@ -325,11 +326,12 @@ export function EncryptPage() {
 
       // ファイル保存（メール送信も含む）
       const fileId = await FileStorage.saveEncryptedFile(
-        fileDataForStorage, 
-        recipients, 
-        expiryDays, 
+        fileDataForStorage,
+        recipients,
+        expiryDays,
         message,
-        requireVerification
+        requireVerification,
+        maxDownloads
       );
       
       setProgress({
