@@ -8,6 +8,7 @@ import { AddressBookPage } from '../components/dashboard/address-book-page';
 import { PasswordSettingsPage } from '../components/dashboard/password-settings-page';
 import { AccountInfoPage } from '../components/dashboard/account-info-page';
 import { ProfileEditPage } from '../components/dashboard/profile-edit-page';
+import { AuthTestPage } from '../components/dashboard/auth-test-page';
 import { useAuth } from '../contexts/auth-context';
 import {
   LayoutDashboard,
@@ -19,10 +20,11 @@ import {
   Settings,
   LogOut,
   Menu,
-  X
+  X,
+  TestTube
 } from 'lucide-react';
 
-type ViewType = 'home' | 'lock' | 'unlock' | 'addressbook' | 'password' | 'account' | 'profile-edit';
+type ViewType = 'home' | 'lock' | 'unlock' | 'addressbook' | 'password' | 'account' | 'profile-edit' | 'auth-test';
 
 export function DashboardPage() {
   const navigate = useNavigate();
@@ -62,6 +64,11 @@ export function DashboardPage() {
       icon: Key,
       label: 'パスワード設定',
       view: 'password' as ViewType,
+    },
+    {
+      icon: TestTube,
+      label: '認証方法テスト',
+      view: 'auth-test' as ViewType,
     },
     {
       icon: UserIcon,
@@ -144,6 +151,7 @@ export function DashboardPage() {
           {currentView === 'unlock' && <FileUnlockPage />}
           {currentView === 'addressbook' && <AddressBookPage />}
           {currentView === 'password' && <PasswordSettingsPage />}
+          {currentView === 'auth-test' && <AuthTestPage />}
           {currentView === 'account' && (
             <AccountInfoPage onEditClick={() => setCurrentView('profile-edit')} />
           )}
