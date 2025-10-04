@@ -6,14 +6,16 @@ import { FileLockPage } from '../components/dashboard/file-lock-page';
 import { FileUnlockPage } from '../components/dashboard/file-unlock-page';
 import { AddressBookPage } from '../components/dashboard/address-book-page';
 import { PasswordSettingsPage } from '../components/dashboard/password-settings-page';
+import { AccountInfoPage } from '../components/dashboard/account-info-page';
+import { ProfileEditPage } from '../components/dashboard/profile-edit-page';
 import { DatabaseService } from '../lib/database';
 import { FileStorage } from '../lib/storage';
-import { BarChart3, Shield, Users, HardDrive, Lock, Unlock, BookOpen, Grid3x3 as Grid3X3, Key } from 'lucide-react';
+import { BarChart3, Shield, Users, HardDrive, Lock, Unlock, BookOpen, Grid3x3 as Grid3X3, Key, User as UserIcon, Edit } from 'lucide-react';
 
 export function DashboardPage() {
   const [files, setFiles] = useState<any[]>([]);
   const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
-  const [currentView, setCurrentView] = useState<'overview' | 'files' | 'lock' | 'unlock' | 'addressbook' | 'password'>('overview');
+  const [currentView, setCurrentView] = useState<'overview' | 'files' | 'lock' | 'unlock' | 'addressbook' | 'password' | 'account' | 'profile-edit'>('overview');
   const [stats, setStats] = useState({
     totalFiles: 0,
     totalRecipients: 0,
@@ -275,16 +277,40 @@ export function DashboardPage() {
                 <button
                   onClick={() => setCurrentView('password')}
                   className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left transition-all duration-200 ${
-                    currentView === 'password' 
-                      ? 'bg-gradient-to-r from-orange-600 to-orange-500 text-white shadow-lg transform scale-105' 
+                    currentView === 'password'
+                      ? 'bg-gradient-to-r from-orange-600 to-orange-500 text-white shadow-lg transform scale-105'
                       : 'text-slate-300 hover:bg-slate-700 hover:text-white hover:transform hover:scale-105'
                   }`}
                 >
                   <Key className="h-5 w-5" />
                   <span className="font-medium">パスワード設定</span>
                 </button>
+
+                <button
+                  onClick={() => setCurrentView('account')}
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left transition-all duration-200 ${
+                    currentView === 'account'
+                      ? 'bg-gradient-to-r from-cyan-600 to-cyan-500 text-white shadow-lg transform scale-105'
+                      : 'text-slate-300 hover:bg-slate-700 hover:text-white hover:transform hover:scale-105'
+                  }`}
+                >
+                  <UserIcon className="h-5 w-5" />
+                  <span className="font-medium">アカウント情報</span>
+                </button>
+
+                <button
+                  onClick={() => setCurrentView('profile-edit')}
+                  className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left transition-all duration-200 ${
+                    currentView === 'profile-edit'
+                      ? 'bg-gradient-to-r from-pink-600 to-pink-500 text-white shadow-lg transform scale-105'
+                      : 'text-slate-300 hover:bg-slate-700 hover:text-white hover:transform hover:scale-105'
+                  }`}
+                >
+                  <Edit className="h-5 w-5" />
+                  <span className="font-medium">プロフィール編集</span>
+                </button>
               </div>
-              
+
               {/* セキュリティバッジ */}
               <div className="mt-8 p-4 bg-gradient-to-r from-emerald-600 to-emerald-500 rounded-xl">
                 <div className="flex items-center space-x-2">
@@ -384,6 +410,8 @@ export function DashboardPage() {
             {currentView === 'unlock' && <FileUnlockPage />}
             {currentView === 'addressbook' && <AddressBookPage />}
             {currentView === 'password' && <PasswordSettingsPage />}
+            {currentView === 'account' && <AccountInfoPage onEditClick={() => setCurrentView('profile-edit')} />}
+            {currentView === 'profile-edit' && <ProfileEditPage />}
           </div>
         </div>
       </main>
