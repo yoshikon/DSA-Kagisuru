@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../../contexts/auth-context';
 import { MFAService, PasskeyService } from '../../lib/mfa-service';
+import { ProfileService } from '../../lib/profile-service';
 import {
   TestTube,
   Lock,
@@ -66,33 +67,27 @@ export const AuthTestPage = () => {
       };
     }
 
-    await new Promise(resolve => setTimeout(resolve, 1500));
-
     try {
-      const mfaSettings = await MFAService.getMFASettings(user.id);
+      const profile = await ProfileService.getProfile(user.id);
 
-      if (!mfaSettings) {
+      if (!profile?.phone_number) {
         return {
-          status: 'success',
-          message: 'SMS認証設定が未設定です（システムは正常）',
+          status: 'error',
+          message: '電話番号が設定されていません。プロフィール設定で電話番号を追加してください',
         };
       }
 
-      if (mfaSettings.phone_verified) {
-        return {
-          status: 'success',
-          message: 'SMS認証システムは正常に動作しています',
-        };
-      }
+      const testCode = await MFAService.sendVerificationCode(user.id, profile.phone_number);
 
       return {
         status: 'success',
-        message: 'SMS認証設定が利用可能です',
+        message: `SMS送信成功！ ${profile.phone_number} に認証コードを送信しました`,
       };
-    } catch (error) {
+    } catch (error: any) {
+      console.error('SMS test error:', error);
       return {
         status: 'error',
-        message: 'SMS認証システムのテストに失敗しました',
+        message: `SMS送信エラー: ${error.message || 'SMSの送信に失敗しました'}`,
       };
     }
   };

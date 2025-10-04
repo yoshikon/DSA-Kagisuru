@@ -9,6 +9,7 @@ import { PasswordSettingsPage } from '../components/dashboard/password-settings-
 import { AccountInfoPage } from '../components/dashboard/account-info-page';
 import { ProfileEditPage } from '../components/dashboard/profile-edit-page';
 import { AuthTestPage } from '../components/dashboard/auth-test-page';
+import { SMSTestPage } from '../components/dashboard/sms-test-page';
 import { useAuth } from '../contexts/auth-context';
 import {
   LayoutDashboard,
@@ -21,10 +22,11 @@ import {
   LogOut,
   Menu,
   X,
-  TestTube
+  TestTube,
+  MessageSquare
 } from 'lucide-react';
 
-type ViewType = 'home' | 'lock' | 'unlock' | 'addressbook' | 'password' | 'account' | 'profile-edit' | 'auth-test';
+type ViewType = 'home' | 'lock' | 'unlock' | 'addressbook' | 'password' | 'account' | 'profile-edit' | 'auth-test' | 'sms-test';
 
 export function DashboardPage() {
   const navigate = useNavigate();
@@ -69,6 +71,11 @@ export function DashboardPage() {
       icon: TestTube,
       label: '認証方法テスト',
       view: 'auth-test' as ViewType,
+    },
+    {
+      icon: MessageSquare,
+      label: 'SMS認証テスト',
+      view: 'sms-test' as ViewType,
     },
     {
       icon: UserIcon,
@@ -152,6 +159,7 @@ export function DashboardPage() {
           {currentView === 'addressbook' && <AddressBookPage />}
           {currentView === 'password' && <PasswordSettingsPage />}
           {currentView === 'auth-test' && <AuthTestPage />}
+          {currentView === 'sms-test' && <SMSTestPage />}
           {currentView === 'account' && (
             <AccountInfoPage onEditClick={() => setCurrentView('profile-edit')} />
           )}
