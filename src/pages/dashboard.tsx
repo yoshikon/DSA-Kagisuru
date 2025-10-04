@@ -307,7 +307,7 @@ export function DashboardPage() {
                   }`}
                 >
                   <Edit className="h-5 w-5" />
-                  <span className="font-medium">プロフィール編集</span>
+                  <span className="font-medium">プロフィール設定</span>
                 </button>
               </div>
 
