@@ -1,18 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { FileInfo } from '../components/access/file-info';
 import { AuthMethodSelector } from '../components/access/auth-method-selector';
+import { SMSVerificationModal } from '../components/access/sms-verification-modal';
 import { Download } from 'lucide-react';
 import { WebAuthnAuth, FileEncryption } from '../lib/crypto';
 import { DatabaseService } from '../lib/database';
+import { ProfileService } from '../lib/profile-service';
+import { useAuth } from '../contexts/auth-context';
 
 export function AccessPage() {
   const token = new URLSearchParams(window.location.search).get('token');
-  
+  const { user } = useAuth();
+
   const [fileData, setFileData] = useState<any>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isDecrypting, setIsDecrypting] = useState(false);
   const [authLoading, setAuthLoading] = useState(false);
   const [error, setError] = useState<string>('');
+  const [showSMSModal, setShowSMSModal] = useState(false);
+  const [userPhoneNumber, setUserPhoneNumber] = useState<string>('');
 
   useEffect(() => {
     if (token) {
@@ -33,6 +39,18 @@ export function AccessPage() {
       setError('アクセストークンが必要です');
     }
   }, [token]);
+
+  useEffect(() => {
+    if (user) {
+      ProfileService.getProfile(user.id).then(profile => {
+        if (profile?.phone_number) {
+          setUserPhoneNumber(profile.phone_number);
+        }
+      }).catch(err => {
+        console.error('Failed to load phone number:', err);
+      });
+    }
+  }, [user]);
 
   const handleWebAuthn = async () => {
     setAuthLoading(true);
@@ -64,7 +82,7 @@ export function AccessPage() {
     try {
       // OTP送信のシミュレーション
       alert(`${fileData.recipientEmail} にOTPコードを送信しました（デモ版では自動認証されます）`);
-      
+
       // デモ用: 自動的に認証成功
       setTimeout(() => {
         setIsAuthenticated(true);
@@ -74,6 +92,34 @@ export function AccessPage() {
       setError('OTP送信でエラーが発生しました');
       setAuthLoading(false);
     }
+  };
+
+  const handleSMSOTP = async () => {
+    if (!user) {
+      setError('SMS認証を使用するにはログインが必要です');
+      return;
+    }
+
+    if (!userPhoneNumber) {
+      setError('SMS認証を使用するには電話番号を設定してください');
+      return;
+    }
+
+    setAuthLoading(true);
+    setError('');
+
+    try {
+      setShowSMSModal(true);
+    } catch (error) {
+      setError('SMS認証でエラーが発生しました');
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleSMSVerified = () => {
+    setIsAuthenticated(true);
+    setShowSMSModal(false);
   };
 
   const handleDownload = async () => {
@@ -164,9 +210,11 @@ export function AccessPage() {
               requireVerification={fileData.requireVerification}
               onWebAuthn={handleWebAuthn}
               onEmailOTP={handleEmailOTP}
+              onSMSOTP={handleSMSOTP}
               loading={authLoading}
+              smsAvailable={!!user && !!userPhoneNumber}
             />
-            
+
             {error && (
               <div className="mt-4 p-4 bg-red-50 rounded-lg border border-red-200">
                 <p className="text-sm text-red-800">{error}</p>
@@ -201,6 +249,16 @@ export function AccessPage() {
               <p>復号されたデータは一時的にのみ保持されます</p>
             </div>
           </div>
+        )}
+
+        {user && showSMSModal && userPhoneNumber && (
+          <SMSVerificationModal
+            isOpen={showSMSModal}
+            onClose={() => setShowSMSModal(false)}
+            onVerified={handleSMSVerified}
+            userId={user.id}
+            phoneNumber={userPhoneNumber}
+          />
         )}
       </div>
     </div>

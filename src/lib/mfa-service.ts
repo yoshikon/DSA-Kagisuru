@@ -85,7 +85,34 @@ export class MFAService {
       throw error;
     }
 
-    console.log(`Verification code for ${phoneNumber}: ${code}`);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-sms`;
+
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session?.access_token || import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          phoneNumber,
+          code,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Failed to send SMS:', errorData);
+        console.log(`[FALLBACK] Verification code for ${phoneNumber}: ${code}`);
+      } else {
+        const result = await response.json();
+        console.log('SMS sent successfully:', result);
+      }
+    } catch (error) {
+      console.error('Error calling send-sms function:', error);
+      console.log(`[FALLBACK] Verification code for ${phoneNumber}: ${code}`);
+    }
 
     return code;
   }

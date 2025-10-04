@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Fingerprint, Mail, Shield, AlertTriangle } from 'lucide-react';
+import { Fingerprint, Mail, Shield, AlertTriangle, Smartphone } from 'lucide-react';
 import { WebAuthnAuth } from '../../lib/crypto';
 
 interface AuthMethodSelectorProps {
@@ -8,16 +8,20 @@ interface AuthMethodSelectorProps {
   requireVerification?: boolean;
   onWebAuthn: () => Promise<void>;
   onEmailOTP: () => Promise<void>;
+  onSMSOTP?: () => Promise<void>;
   loading?: boolean;
+  smsAvailable?: boolean;
 }
 
-export function AuthMethodSelector({ 
-  recipientEmail, 
-  requiredEmail, 
+export function AuthMethodSelector({
+  recipientEmail,
+  requiredEmail,
   requireVerification = false,
-  onWebAuthn, 
-  onEmailOTP, 
-  loading = false 
+  onWebAuthn,
+  onEmailOTP,
+  onSMSOTP,
+  loading = false,
+  smsAvailable = false
 }: AuthMethodSelectorProps) {
   const [webauthnSupported, setWebauthnSupported] = useState(false);
 
@@ -99,6 +103,17 @@ export function AuthMethodSelector({
           <Mail className="h-5 w-5" />
           <span className="font-medium">メール認証コードでアクセス</span>
         </button>
+
+        {smsAvailable && onSMSOTP && (
+          <button
+            onClick={onSMSOTP}
+            disabled={loading || !isAuthorizedRecipient}
+            className="w-full flex items-center justify-center space-x-3 p-4 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            <Smartphone className="h-5 w-5" />
+            <span className="font-medium">SMS認証コードでアクセス</span>
+          </button>
+        )}
       </div>
 
       <div className="mt-6 text-xs text-gray-500 text-center space-y-1">
