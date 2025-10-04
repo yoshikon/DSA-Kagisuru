@@ -7,18 +7,19 @@ import { DashboardPage } from './pages/dashboard';
 import LoginPage from './pages/login';
 import SignUpPage from './pages/signup';
 import AccountDashboard from './pages/account-dashboard';
+import { ProtectedRoute } from './components/auth/protected-route';
 
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/encrypt" element={<EncryptPage />} />
+        <Route path="/encrypt" element={<ProtectedRoute><EncryptPage /></ProtectedRoute>} />
         <Route path="/access" element={<AccessPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignUpPage />} />
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/account" element={<AccountDashboard />} />
+        <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+        <Route path="/account" element={<ProtectedRoute><AccountDashboard /></ProtectedRoute>} />
       </Routes>
     </Router>
   );
