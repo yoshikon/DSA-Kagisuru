@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/auth-context';
 import { ProfileService, UserProfile } from '../../lib/profile-service';
-import { User, Mail, Phone, Calendar, Shield, Edit, LogOut } from 'lucide-react';
+import { User, Mail, Phone, Calendar, Shield, CreditCard as Edit, LogOut } from 'lucide-react';
 
 interface AccountInfoPageProps {
   onEditClick?: () => void;

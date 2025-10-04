@@ -10,7 +10,7 @@ import { AccountInfoPage } from '../components/dashboard/account-info-page';
 import { ProfileEditPage } from '../components/dashboard/profile-edit-page';
 import { DatabaseService } from '../lib/database';
 import { FileStorage } from '../lib/storage';
-import { BarChart3, Shield, Users, HardDrive, Lock, Unlock, BookOpen, Grid3x3 as Grid3X3, Key, User as UserIcon, Edit } from 'lucide-react';
+import { BarChart3, Shield, Users, HardDrive, Lock, Unlock, BookOpen, Grid3x3 as Grid3X3, Key, User as UserIcon, CreditCard as Edit } from 'lucide-react';
 
 export function DashboardPage() {
   const [files, setFiles] = useState<any[]>([]);
