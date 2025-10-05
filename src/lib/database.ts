@@ -23,7 +23,7 @@ export class DatabaseService {
     originalName: string;
     mimeType: string;
     size: number;
-  }, recipients: string[], expiryDays: number, message?: string, requireVerification: boolean = true, maxDownloads: number | null = null): Promise<{ fileId: string; accessTokens: { [email: string]: string } }> {
+  }, recipients: string[], expiryDays: number, message?: string, requireVerification: boolean = true, maxDownloads: number | null = null, userId?: string): Promise<{ fileId: string; accessTokens: { [email: string]: string } }> {
     // Supabaseが利用できない場合はエラーを投げる
     if (!isSupabaseAvailable() || !supabase) {
       throw new Error('データベースサービスが利用できません。環境変数を確認してください。');
@@ -52,7 +52,8 @@ export class DatabaseService {
           max_downloads: maxDownloads,
           message: message || null,
           download_count: 0,
-          require_verification: requireVerification
+          require_verification: requireVerification,
+          user_id: userId || null
         })
         .select()
         .single();
@@ -66,13 +67,14 @@ export class DatabaseService {
       const recipientRecords = recipients.map(email => {
         const accessToken = this.generateAccessToken();
         accessTokens[email] = accessToken;
-        
+
         return {
           file_id: fileRecord.id,
           email: email,
           encrypted_key: btoa(email), // 簡素化版（実際はより強固な暗号化が必要）
           access_token: accessToken,
-          access_count: 0
+          access_count: 0,
+          sender_id: userId || null
         };
       });
 

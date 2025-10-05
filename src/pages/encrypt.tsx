@@ -10,10 +10,12 @@ import { DownloadModal } from '../components/dashboard/download-modal';
 import { FileEncryption } from '../lib/crypto';
 import { FileStorage } from '../lib/storage';
 import { isSupabaseAvailable } from '../lib/supabase';
+import { useAuth } from '../contexts/auth-context';
 import type { EncryptionProgress } from '../types';
 import { Lock, Send, ArrowRight } from 'lucide-react';
 
 export function EncryptPage() {
+  const { user } = useAuth();
   const [files, setFiles] = useState<File[]>([]);
   const [recipients, setRecipients] = useState<string[]>([]);
   const [expiryDays, setExpiryDays] = useState(7);
@@ -121,7 +123,8 @@ export function EncryptPage() {
         expiryDays,
         message,
         requireVerification,
-        maxDownloads
+        maxDownloads,
+        user?.id
       );
       
       setProgress({
@@ -331,7 +334,8 @@ export function EncryptPage() {
         expiryDays,
         message,
         requireVerification,
-        maxDownloads
+        maxDownloads,
+        user?.id
       );
       
       setProgress({

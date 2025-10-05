@@ -14,7 +14,7 @@ export class FileStorage {
     originalName: string;
     mimeType: string;
     size: number;
-  }, recipients: string[], expiryDays: number = 7, message?: string, requireVerification: boolean = true, maxDownloads: number | null = null): Promise<string> {
+  }, recipients: string[], expiryDays: number = 7, message?: string, requireVerification: boolean = true, maxDownloads: number | null = null, userId?: string): Promise<string> {
     try {
       // 環境変数チェック
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -43,7 +43,8 @@ export class FileStorage {
             expiryDays,
             message,
             requireVerification,
-            maxDownloads
+            maxDownloads,
+            userId
           );
           fileId = result.fileId;
           accessTokens = result.accessTokens;
