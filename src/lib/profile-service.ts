@@ -8,6 +8,8 @@ export interface UserProfile {
   avatar_url?: string;
   bio?: string;
   two_factor_enabled: boolean;
+  master_password_hash?: string;
+  master_password_salt?: string;
   created_at: string;
   updated_at: string;
 }
@@ -17,6 +19,8 @@ export interface UpdateProfileData {
   phone_number?: string;
   avatar_url?: string;
   bio?: string;
+  master_password_hash?: string;
+  master_password_salt?: string;
 }
 
 export class ProfileService {
@@ -133,6 +137,111 @@ export class ProfileService {
       return true;
     } catch (error) {
       console.error('Phone verification error:', error);
+      return false;
+    }
+  }
+
+  static async setMasterPassword(userId: string, password: string): Promise<boolean> {
+    try {
+      const encoder = new TextEncoder();
+      const passwordData = encoder.encode(password);
+
+      const salt = crypto.getRandomValues(new Uint8Array(16));
+
+      const keyMaterial = await crypto.subtle.importKey(
+        'raw',
+        passwordData,
+        { name: 'PBKDF2' },
+        false,
+        ['deriveBits']
+      );
+
+      const derivedBits = await crypto.subtle.deriveBits(
+        {
+          name: 'PBKDF2',
+          salt: salt,
+          iterations: 100000,
+          hash: 'SHA-256'
+        },
+        keyMaterial,
+        256
+      );
+
+      const hashArray = Array.from(new Uint8Array(derivedBits));
+      const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+      const saltArray = Array.from(salt);
+      const saltHex = saltArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+      const { error } = await supabase
+        .from('user_profiles')
+        .update({
+          master_password_hash: hashHex,
+          master_password_salt: saltHex,
+        })
+        .eq('id', userId);
+
+      if (error) {
+        console.error('Set master password error:', error);
+        throw error;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Master password setup error:', error);
+      return false;
+    }
+  }
+
+  static async verifyMasterPassword(userId: string, password: string): Promise<boolean> {
+    try {
+      const profile = await this.getProfile(userId);
+      if (!profile?.master_password_hash || !profile?.master_password_salt) {
+        return false;
+      }
+
+      const encoder = new TextEncoder();
+      const passwordData = encoder.encode(password);
+
+      const saltHex = profile.master_password_salt;
+      const saltArray = saltHex.match(/.{1,2}/g)?.map(byte => parseInt(byte, 16)) || [];
+      const salt = new Uint8Array(saltArray);
+
+      const keyMaterial = await crypto.subtle.importKey(
+        'raw',
+        passwordData,
+        { name: 'PBKDF2' },
+        false,
+        ['deriveBits']
+      );
+
+      const derivedBits = await crypto.subtle.deriveBits(
+        {
+          name: 'PBKDF2',
+          salt: salt,
+          iterations: 100000,
+          hash: 'SHA-256'
+        },
+        keyMaterial,
+        256
+      );
+
+      const hashArray = Array.from(new Uint8Array(derivedBits));
+      const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+      return hashHex === profile.master_password_hash;
+    } catch (error) {
+      console.error('Master password verification error:', error);
+      return false;
+    }
+  }
+
+  static async hasMasterPassword(userId: string): Promise<boolean> {
+    try {
+      const profile = await this.getProfile(userId);
+      return !!(profile?.master_password_hash && profile?.master_password_salt);
+    } catch (error) {
+      console.error('Check master password error:', error);
       return false;
     }
   }

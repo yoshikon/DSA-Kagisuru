@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { HomePage } from './pages/home';
 import { EncryptPage } from './pages/encrypt';
 import { AccessPage } from './pages/access';
+import { DecryptLocalPage } from './pages/decrypt-local';
 import { DashboardPage } from './pages/dashboard';
 import LoginPage from './pages/login';
 import SignUpPage from './pages/signup';
@@ -16,6 +17,7 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/encrypt" element={<ProtectedRoute><EncryptPage /></ProtectedRoute>} />
         <Route path="/access" element={<AccessPage />} />
+        <Route path="/decrypt-local" element={<DecryptLocalPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignUpPage />} />
         <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />

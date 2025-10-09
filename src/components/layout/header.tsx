@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Shield, Lock, Menu, LogIn, UserPlus, User, LogOut } from 'lucide-react';
+import { Shield, Lock, Menu, LogIn, UserPlus, User, LogOut, Unlock } from 'lucide-react';
 import { useAuth } from '../../contexts/auth-context';
 
 interface HeaderProps {
@@ -13,6 +13,7 @@ export function Header({ currentPath = '/' }: HeaderProps) {
 
   const navigation = [
     { name: 'ファイル暗号化', href: '/encrypt', current: currentPath === '/encrypt' },
+    { name: 'ファイル解錠', href: '/decrypt-local', current: currentPath === '/decrypt-local' },
     { name: 'ダッシュボード', href: '/dashboard', current: currentPath === '/dashboard' },
   ];
 

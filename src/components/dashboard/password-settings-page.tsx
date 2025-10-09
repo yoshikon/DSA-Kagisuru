@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Key, Eye, EyeOff, RefreshCw, Copy, Check, Save, Shield } from 'lucide-react';
 import { FileEncryption } from '../../lib/crypto';
+import { ProfileService } from '../../lib/profile-service';
+import { useAuth } from '../../contexts/auth-context';
 
 export function PasswordSettingsPage() {
+  const { user } = useAuth();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -13,15 +16,26 @@ export function PasswordSettingsPage() {
   const [autoPassword, setAutoPassword] = useState('');
   const [copied, setCopied] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [hasPassword, setHasPassword] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  // 現在のパスワードを読み込み
+  // 現在のパスワード状態を確認
   useEffect(() => {
-    const savedPassword = localStorage.getItem('kagisuru_decryption_password');
-    if (savedPassword) {
-      setCurrentPassword(savedPassword);
+    checkPasswordStatus();
+  }, [user]);
+
+  const checkPasswordStatus = async () => {
+    if (!user) return;
+    try {
+      const hasMasterPassword = await ProfileService.hasMasterPassword(user.id);
+      setHasPassword(hasMasterPassword);
+      if (hasMasterPassword) {
+        setCurrentPassword('********');
+      }
+    } catch (error) {
+      console.error('Failed to check password status:', error);
     }
-  }, []);
+  };
 
   // 自動パスワード生成
   useEffect(() => {
