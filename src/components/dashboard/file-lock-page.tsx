@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Lock, User, Upload, Clock, ChevronDown, Download, X } from 'lucide-react';
 import { FileUploadZone } from '../ui/file-upload-zone';
 import { FileEncryption } from '../../lib/crypto';
@@ -17,6 +17,13 @@ export function FileLockPage() {
   } | null>(null);
   const [showSendPage, setShowSendPage] = useState(false);
   const [showDownloadModal, setShowDownloadModal] = useState(false);
+
+  // 暗号化データをRefでも保持（状態管理の問題を回避）
+  const lockedFileRef = useRef<{
+    originalFile: File;
+    encryptedData: Uint8Array;
+    fileName: string;
+  } | null>(null);
 
   const handleLock = async () => {
     if (!recipient || files.length === 0) {
@@ -77,17 +84,27 @@ export function FileLockPage() {
         metadata
       });
 
-      // 施錠済みファイル情報を保存
-      setLockedFile({
-        originalFile: fileToLock,
-        encryptedData: finalData,
-        fileName: `【施錠済み】${fileToLock.name}.kgsr`
-      });
-
       // サイズチェック
       if (finalData.length === 0) {
         throw new Error('暗号化データのサイズが0バイトです');
       }
+
+      // 施錠済みファイル情報を作成
+      const lockedFileData = {
+        originalFile: fileToLock,
+        encryptedData: finalData,
+        fileName: `【施錠済み】${fileToLock.name}.kgsr`
+      };
+
+      // StateとRefの両方に保存
+      setLockedFile(lockedFileData);
+      lockedFileRef.current = lockedFileData;
+
+      console.log('Locked file saved to state and ref:', {
+        stateSet: true,
+        refSet: true,
+        dataSize: lockedFileData.encryptedData.length
+      });
 
       alert(`${recipient}宛にファイルを施錠しました\nファイルサイズ: ${(finalData.length / 1024).toFixed(2)} KB`);
     } catch (error) {
@@ -134,20 +151,69 @@ export function FileLockPage() {
     URL.revokeObjectURL(url);
   };
 
-  const handleDownloadClick = () => {
-    setShowDownloadModal(true);
+  const handleDownloadClick = async () => {
+    // Refから取得（状態管理の問題を回避）
+    const fileToDownload = lockedFileRef.current || lockedFile;
+
+    if (!fileToDownload) {
+      console.error('No locked file available in state or ref');
+      alert('施錠済みファイルがありません');
+      return;
+    }
+
+    console.log('Direct download initiated:', {
+      fileName: fileToDownload.fileName,
+      dataSize: fileToDownload.encryptedData.length,
+      source: lockedFileRef.current ? 'ref' : 'state'
+    });
+
+    if (fileToDownload.encryptedData.length === 0) {
+      alert('エラー: 暗号化データが空です。ファイルの施錠をやり直してください。');
+      return;
+    }
+
+    try {
+      // 直接ダウンロードを実行
+      const blob = new Blob([fileToDownload.encryptedData], { type: 'application/octet-stream' });
+      console.log('Blob created for direct download:', {
+        size: blob.size,
+        type: blob.type
+      });
+
+      if (blob.size === 0) {
+        throw new Error('Blobのサイズが0バイトです');
+      }
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileToDownload.fileName;
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+
+      // クリーンアップ
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        console.log('Download cleanup completed');
+      }, 100);
+
+      // ダウンロード後に送信ページに遷移するか確認
+      setTimeout(() => {
+        if (confirm('ファイルのダウンロードが完了しました。受取人に送信しますか？')) {
+          setShowSendPage(true);
+        }
+      }, 1000);
+    } catch (error) {
+      console.error('Download error:', error);
+      alert('ダウンロードに失敗しました: ' + (error as Error).message);
+    }
   };
 
   const handleDownloadConfirm = (fileName: string, saveLocation?: string) => {
     handleDownload(fileName);
     setShowDownloadModal(false);
-    
-    // ダウンロード後に送信ページに遷移するか確認
-    setTimeout(() => {
-      if (confirm('ファイルのダウンロードが完了しました。受取人に送信しますか？')) {
-        setShowSendPage(true);
-      }
-    }, 1000);
   };
 
   const handleReset = () => {
