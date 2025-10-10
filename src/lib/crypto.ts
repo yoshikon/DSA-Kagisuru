@@ -138,6 +138,41 @@ export class FileEncryption {
     const keyData = atob(encryptedKey);
     return keyData;
   }
+
+  // カスタムフォーマット（メタデータ付き）のファイル復号
+  static async decryptFileWithMetadata(
+    fileData: Uint8Array,
+    password: string
+  ): Promise<{
+    data: Uint8Array;
+    originalName: string;
+    mimeType: string;
+  }> {
+    // ヘッダー長を読み取り（最初の4バイト）
+    const dataView = new DataView(fileData.buffer, fileData.byteOffset, fileData.byteLength);
+    const headerLength = dataView.getUint32(0, true);
+
+    // ヘッダーJSONを読み取り
+    const headerBytes = fileData.slice(4, 4 + headerLength);
+    const headerJson = new TextDecoder().decode(headerBytes);
+    const metadata = JSON.parse(headerJson);
+
+    // 暗号化データを抽出
+    const encryptedData = fileData.slice(4 + headerLength);
+
+    // ソルトとIVを復元
+    const salt = new Uint8Array(metadata.salt);
+    const iv = new Uint8Array(metadata.iv);
+
+    // 復号
+    const decrypted = await this.decryptFile(encryptedData, password, salt, iv);
+
+    return {
+      data: new Uint8Array(decrypted),
+      originalName: metadata.originalName,
+      mimeType: metadata.mimeType,
+    };
+  }
 }
 
 // WebAuthn認証クラス

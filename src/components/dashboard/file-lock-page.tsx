@@ -68,14 +68,28 @@ export function FileLockPage() {
       finalData.set(headerBytes, 4);
       finalData.set(encryptedFile.encryptedData, 4 + headerBytes.length);
       
+      // デバッグ情報を出力
+      console.log('Encryption completed:', {
+        originalFileSize: fileToLock.size,
+        encryptedDataSize: encryptedFile.encryptedData.length,
+        headerSize: headerBytes.length,
+        finalDataSize: finalData.length,
+        metadata
+      });
+
       // 施錠済みファイル情報を保存
       setLockedFile({
         originalFile: fileToLock,
         encryptedData: finalData,
         fileName: `【施錠済み】${fileToLock.name}.kgsr`
       });
-      
-      alert(`${recipient}宛にファイルを施錠しました`);
+
+      // サイズチェック
+      if (finalData.length === 0) {
+        throw new Error('暗号化データのサイズが0バイトです');
+      }
+
+      alert(`${recipient}宛にファイルを施錠しました\nファイルサイズ: ${(finalData.length / 1024).toFixed(2)} KB`);
     } catch (error) {
       console.error('施錠エラー:', error);
       alert('ファイルの施錠に失敗しました');
@@ -85,12 +99,31 @@ export function FileLockPage() {
   };
 
   const handleDownload = (customFileName?: string) => {
-    if (!lockedFile) return;
-    
+    if (!lockedFile) {
+      console.error('No locked file available');
+      return;
+    }
+
+    console.log('Download requested:', {
+      fileName: lockedFile.fileName,
+      dataLength: lockedFile.encryptedData.length,
+      customFileName
+    });
+
+    if (lockedFile.encryptedData.length === 0) {
+      alert('エラー: 暗号化データが空です。ファイルの施錠をやり直してください。');
+      return;
+    }
+
     const downloadFileName = customFileName || lockedFile.fileName;
-    
+
     // 暗号化ファイルをダウンロード
     const blob = new Blob([lockedFile.encryptedData], { type: 'application/octet-stream' });
+    console.log('Blob created:', {
+      size: blob.size,
+      type: blob.type
+    });
+
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;

@@ -77,7 +77,7 @@ export function DecryptLocalPage() {
       const fileContent = await selectedFile.arrayBuffer();
       const fileData = new Uint8Array(fileContent);
 
-      const decrypted = await FileEncryption.decryptFile(fileData, decryptionPassword);
+      const decrypted = await FileEncryption.decryptFileWithMetadata(fileData, decryptionPassword);
 
       setDecryptedFile({
         data: decrypted.data,
