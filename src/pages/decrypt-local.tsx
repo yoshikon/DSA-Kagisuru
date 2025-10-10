@@ -18,13 +18,47 @@ export function DecryptLocalPage() {
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [useMasterPassword, setUseMasterPassword] = useState(true);
+  const [isDragging, setIsDragging] = useState(false);
+  const [rememberPassword, setRememberPassword] = useState(false);
+  const [autoDownload, setAutoDownload] = useState(true);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      setSelectedFile(file);
-      setError(null);
-      setDecryptedFile(null);
+      processFile(file);
+    }
+  };
+
+  const processFile = (file: File) => {
+    setSelectedFile(file);
+    setError(null);
+    setDecryptedFile(null);
+
+    // パスワードが保存されていて自動解錠が有効な場合
+    if (rememberPassword && password && autoDownload) {
+      setTimeout(() => {
+        handleDecrypt();
+      }, 500);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      processFile(file);
     }
   };
 
@@ -86,6 +120,13 @@ export function DecryptLocalPage() {
       });
 
       setError(null);
+
+      // 自動ダウンロードが有効な場合
+      if (autoDownload) {
+        setTimeout(() => {
+          downloadDecryptedFile(decrypted.data, decrypted.originalName, decrypted.mimeType);
+        }, 500);
+      }
     } catch (err: any) {
       console.error('Decryption error:', err);
       setError(err.message || 'ファイルの解錠に失敗しました。パスワードが正しいか確認してください。');
@@ -94,18 +135,24 @@ export function DecryptLocalPage() {
     }
   };
 
-  const handleDownload = () => {
-    if (!decryptedFile) return;
-
-    const blob = new Blob([decryptedFile.data], { type: decryptedFile.type });
+  const downloadDecryptedFile = (data: Uint8Array, name: string, type: string) => {
+    const blob = new Blob([data], { type });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = decryptedFile.name;
+    a.download = name;
+    a.style.display = 'none';
     document.body.appendChild(a);
     a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 100);
+  };
+
+  const handleDownload = () => {
+    if (!decryptedFile) return;
+    downloadDecryptedFile(decryptedFile.data, decryptedFile.name, decryptedFile.type);
   };
 
   return (
@@ -136,22 +183,42 @@ export function DecryptLocalPage() {
                   <input
                     type="file"
                     onChange={handleFileSelect}
-                    accept=".encrypted"
+                    accept=".kgsr,.encrypted"
                     className="hidden"
                     id="file-input"
                   />
                   <label
                     htmlFor="file-input"
-                    className="flex items-center justify-center w-full px-6 py-8 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all"
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                    className={`flex items-center justify-center w-full px-6 py-12 border-2 border-dashed rounded-lg cursor-pointer transition-all ${
+                      isDragging
+                        ? 'border-blue-500 bg-blue-50 scale-105'
+                        : 'border-gray-300 hover:border-blue-500 hover:bg-blue-50'
+                    }`}
                   >
                     <div className="text-center">
-                      <Upload className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                      <p className="text-sm font-medium text-gray-700">
-                        {selectedFile ? selectedFile.name : 'クリックしてファイルを選択'}
-                      </p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        .encrypted ファイルのみ対応
-                      </p>
+                      <Upload className={`w-16 h-16 mx-auto mb-4 ${isDragging ? 'text-blue-500' : 'text-gray-400'}`} />
+                      {selectedFile ? (
+                        <>
+                          <p className="text-lg font-medium text-gray-900 mb-1">
+                            {selectedFile.name}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            {(selectedFile.size / 1024).toFixed(2)} KB
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          <p className="text-lg font-medium text-gray-700 mb-2">
+                            {isDragging ? 'ここにドロップ' : 'クリックまたはドラッグ&ドロップ'}
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            .kgsr または .encrypted ファイル
+                          </p>
+                        </>
+                      )}
                     </div>
                   </label>
                 </div>
@@ -203,6 +270,45 @@ export function DecryptLocalPage() {
                       <p className="mt-2 text-xs text-gray-600">
                         ダッシュボードのパスワード設定で設定したマスターパスワードを入力してください
                       </p>
+                    )}
+                  </div>
+
+                  {/* 便利機能オプション */}
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-3">
+                    <h4 className="text-sm font-semibold text-blue-900 mb-2">便利機能</h4>
+
+                    <div className="flex items-center space-x-3">
+                      <input
+                        type="checkbox"
+                        id="auto-download"
+                        checked={autoDownload}
+                        onChange={(e) => setAutoDownload(e.target.checked)}
+                        className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                      />
+                      <label htmlFor="auto-download" className="text-sm text-gray-700 cursor-pointer">
+                        解錠後に自動でダウンロード
+                      </label>
+                    </div>
+
+                    <div className="flex items-center space-x-3">
+                      <input
+                        type="checkbox"
+                        id="remember-password"
+                        checked={rememberPassword}
+                        onChange={(e) => setRememberPassword(e.target.checked)}
+                        className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                      />
+                      <label htmlFor="remember-password" className="text-sm text-gray-700 cursor-pointer">
+                        このセッション中パスワードを記憶（連続解錠用）
+                      </label>
+                    </div>
+
+                    {rememberPassword && autoDownload && (
+                      <div className="bg-green-50 border border-green-200 rounded p-3 mt-2">
+                        <p className="text-xs text-green-800">
+                          <strong>ワンクリック解錠モード有効:</strong> 次回からファイルをドロップするだけで自動解錠＆ダウンロードされます
+                        </p>
+                      </div>
                     )}
                   </div>
 
@@ -274,19 +380,54 @@ export function DecryptLocalPage() {
           )}
         </div>
 
-        <div className="mt-8 bg-blue-50 border border-blue-200 rounded-xl p-6">
-          <div className="flex items-start space-x-4">
-            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-              <Lock className="w-6 h-6 text-blue-600" />
+        <div className="mt-8 space-y-6">
+          {/* 使い方ガイド */}
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-6">
+            <div className="flex items-start space-x-4">
+              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <Unlock className="w-6 h-6 text-green-600" />
+              </div>
+              <div>
+                <h4 className="font-bold text-green-900 mb-3">簡単3ステップで解錠</h4>
+                <div className="space-y-2 text-sm text-green-800">
+                  <div className="flex items-start space-x-2">
+                    <span className="font-bold bg-green-200 text-green-900 rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0">1</span>
+                    <p><strong>ドラッグ&ドロップ:</strong> .kgsrファイルを上のエリアにドロップ</p>
+                  </div>
+                  <div className="flex items-start space-x-2">
+                    <span className="font-bold bg-green-200 text-green-900 rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0">2</span>
+                    <p><strong>パスワード入力:</strong> マスターパスワードを入力</p>
+                  </div>
+                  <div className="flex items-start space-x-2">
+                    <span className="font-bold bg-green-200 text-green-900 rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0">3</span>
+                    <p><strong>自動完了:</strong> 解錠後、元のファイルが自動ダウンロード</p>
+                  </div>
+                </div>
+                <div className="mt-4 bg-green-100 border border-green-300 rounded-lg p-3">
+                  <p className="text-xs text-green-900">
+                    <strong>💡 ヒント:</strong> 「パスワードを記憶」を有効にすると、次回からファイルをドロップするだけで自動解錠されます！
+                  </p>
+                </div>
+              </div>
             </div>
-            <div>
-              <h4 className="font-bold text-blue-900 mb-2">マスターパスワードについて</h4>
-              <ul className="text-sm text-blue-800 space-y-1">
-                <li>• マスターパスワードは管理画面のパスワード設定で設定できます</li>
-                <li>• すべての暗号化ファイルはマスターパスワードで保護されます</li>
-                <li>• マスターパスワードを忘れた場合、ファイルの解錠はできません</li>
-                <li>• セキュリティのため、定期的にパスワードを変更することをお勧めします</li>
-              </ul>
+          </div>
+
+          {/* セキュリティ情報 */}
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
+            <div className="flex items-start space-x-4">
+              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <Lock className="w-6 h-6 text-blue-600" />
+              </div>
+              <div>
+                <h4 className="font-bold text-blue-900 mb-2">マスターパスワードについて</h4>
+                <ul className="text-sm text-blue-800 space-y-1">
+                  <li>• マスターパスワードは管理画面のパスワード設定で設定できます</li>
+                  <li>• すべての暗号化ファイルはマスターパスワードで保護されます</li>
+                  <li>• マスターパスワードを忘れた場合、ファイルの解錠はできません</li>
+                  <li>• セキュリティのため、定期的にパスワードを変更することをお勧めします</li>
+                  <li>• 「パスワードを記憶」は現在のセッション中のみ有効です</li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
