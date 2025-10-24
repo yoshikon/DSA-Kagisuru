@@ -37,6 +37,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     // 初期セッションの取得
     const initializeAuth = async () => {
       try {
+        // Supabaseが利用可能かチェック
+        if (!supabase) {
+          console.warn('Supabase client is not initialized. Check your environment variables.');
+          setLoading(false);
+          return;
+        }
+
         const { data: { session: initialSession }, error } = await supabase.auth.getSession();
 
         if (error) {
@@ -53,6 +60,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     };
 
     initializeAuth();
+
+    // Supabaseが利用可能な場合のみ認証状態を監視
+    if (!supabase) {
+      return;
+    }
 
     // 認証状態の変更を監視
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -71,6 +83,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   }, []);
 
   const signUp = async (email: string, password: string, metadata?: any) => {
+    if (!supabase) {
+      return { user: null, error: { message: 'Supabase not initialized' } as AuthError };
+    }
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -93,6 +108,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   const signIn = async (email: string, password: string) => {
+    if (!supabase) {
+      return { user: null, error: { message: 'Supabase not initialized' } as AuthError };
+    }
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -112,6 +130,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   const signOut = async () => {
+    if (!supabase) {
+      return { error: { message: 'Supabase not initialized' } as AuthError };
+    }
     try {
       const { error } = await supabase.auth.signOut();
 
@@ -128,6 +149,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   const resetPassword = async (email: string) => {
+    if (!supabase) {
+      return { error: { message: 'Supabase not initialized' } as AuthError };
+    }
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`,
@@ -146,6 +170,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   const updatePassword = async (newPassword: string) => {
+    if (!supabase) {
+      return { error: { message: 'Supabase not initialized' } as AuthError };
+    }
     try {
       const { error } = await supabase.auth.updateUser({
         password: newPassword,
@@ -164,6 +191,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   const updateEmail = async (newEmail: string) => {
+    if (!supabase) {
+      return { error: { message: 'Supabase not initialized' } as AuthError };
+    }
     try {
       const { error } = await supabase.auth.updateUser({
         email: newEmail,
